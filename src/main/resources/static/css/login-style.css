@@ -1,0 +1,83 @@
+body.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    padding-top: 0;
+    background-image: url('../images/fondoLogin.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.logo-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 2px;
+    z-index: 10;
+    margin: 0;
+}
+
+.logo-container img {
+    display: inline;
+    max-height: 50px;
+    margin-top: 10px;
+}
+
+#logo {
+    max-height: 120px;
+}
+
+#logo-titulo {
+    max-width: 240px;
+    max-height: 240px;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 25px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-header i {
+    font-size: 3rem;
+    color: #007bff;
+}
+
+.login-header h2 {
+    margin-top: 10px;
+    font-weight: 300;
+}
+
+.login-page .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.login-page .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.login-page .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.login-page .alert {
+    margin-bottom: 15px;
+} 

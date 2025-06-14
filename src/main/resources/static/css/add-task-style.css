@@ -1,0 +1,215 @@
+/* Define variables CSS para colores del tema Claro (para add-task.html) */
+body.theme-light {
+    --body-bg: #ffffff;
+    --main-content-bg: #ffffff;
+    --text-color: #212529;
+    --heading-color: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #fff;
+    --card-text: #212529;
+    --border-color: #000000;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --h2: #000;
+}
+
+/* Define variables CSS para colores del tema Oscuro (para add-task.html) */
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --main-content-bg: #343a40;
+    --text-color: #000000;
+    --heading-color: #ffffff;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #b1da9d;
+    --card-text: #000000;
+    --border-color: #5a6268;
+    --footer-bg: #212529;
+    --footer-text: #ced4da;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+h1, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
+h2 {
+    color: var(--h2);
+}
+
+.main-content {
+    flex: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--main-content-bg);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+.footer.bg-dark {
+    background-color: #343a40 !important;
+}
+
+.footer.text-white {
+    color: white !important;
+}
+
+.footer {
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+#footerA {
+    background-color: black;
+}
+
+/* Estilos específicos para add-task.html */
+.task-form-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border-color);
+    margin-bottom: 30px;
+    margin-top: 30px;
+}
+
+.task-form-container h2 {
+    margin-bottom: 25px;
+    text-align: center;
+    color: black; /* Esto se superpone a --h2 para el título del formulario */
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    background-color: rgb(255, 255, 255);
+    color: var(--card-text);
+    border-color: var(--border-color);
+}
+
+.form-control:focus {
+    border-color: var(--heading-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+    color: #dc3545;
+}
+
+.mt-4.text-center {
+    margin-top: 1.5rem !important;
+}
+
+.btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    color: #fff;
+    background-color: #545b62;
+    border-color: #4e555b;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -5px;
+    margin-left: -5px;
+}
+
+.form-row > .col,
+.form-row > [class*="col-"] {
+    padding-right: 5px;
+    padding-left: 5px;
+}

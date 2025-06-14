@@ -1,0 +1,308 @@
+/* Define variables CSS para colores del tema Claro (para calendar.html) */
+body.theme-light {
+    --body-bg: #ffffff;
+    --main-content-bg: #ffffff;
+    --text-color: #212529;
+    --heading-color: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #fff;
+    --card-text: #212529;
+    --border-color: #000000;
+    --modal-header-bg: #007bff;
+    --modal-header-text: white;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --h2: #000;
+}
+
+/* Define variables CSS para colores del tema Oscuro (para calendar.html) */
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --main-content-bg: #343a40;
+    --text-color: #000000;
+    --heading-color: #ffffff;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #b1da9d;
+    --card-text: #000000;
+    --border-color: #5a6268;
+    --modal-header-bg: #17a2b8;
+    --modal-header-text: white;
+    --footer-bg: #212529;
+    --footer-text: #ced4da;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+h1, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
+h2 {
+    color: var(--h2);
+}
+
+.main-content {
+    flex: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--main-content-bg);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+.footer.bg-dark {
+    background-color: #343a40 !important;
+}
+
+.footer.text-white {
+    color: white !important;
+}
+
+.footer {
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+#footerA {
+    background-color: black;
+}
+
+/* Estilos específicos para calendar.html */
+#calendar {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 40px 10px;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding-bottom: 30px;
+}
+
+body.theme-dark .fc .fc-col-header,
+body.theme-dark .fc .fc-daygrid-body,
+body.theme-dark .fc .fc-timegrid-body,
+body.theme-dark .fc .fc-list-body {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border-color);
+}
+
+body.theme-dark .fc .fc-view-harness {
+    background-color: var(--card-bg);
+}
+
+body.theme-dark .fc .fc-scrollgrid {
+    border-color: #ddd;
+}
+
+body.theme-dark .fc-theme-standard td,
+body.theme-dark .fc-theme-standard th {
+    background-color: #fff;
+    border-color: #ddd;
+}
+
+body.theme-dark .fc .fc-toolbar-title {
+    color: #000;
+}
+
+body.theme-dark .fc .fc-button {
+    background-color: var(--table-header-bg); /* Asumiendo que table-header-bg es adecuado para botones FC */
+    border-color: var(--table-header-bg);
+    color: var(--table-header-text);
+}
+
+body.theme-dark .fc .fc-button:hover {
+    background-color: var(--heading-color);
+    border-color: var(--heading-color);
+}
+
+body.theme-dark .fc-event {
+    color: #fff;
+}
+
+body.theme-dark .fc-daygrid-day-number,
+body.theme-dark .fc-week-number {
+    color: #007bff;
+}
+
+body.theme-dark .fc-daygrid-day-top {
+    color: var(--text-color);
+}
+
+body.theme-dark .fc-col-header-cell {
+    color: var(--text-color);
+    border-bottom-color: var(--border-color);
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+    border: 1px solid #ddd;
+    border: 1px solid var(--fc-border-color, #ddd);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active, .fc .fc-button-primary:not(:disabled):active {
+    color: #fff;
+    color: var(--fc-button-text-color, #fff);
+    background-color: #1a252f;
+    background-color: var(--fc-button-active-bg-color, #1a252f);
+    border-color: #151e27;
+    border-color: var(--fc-button-active-border-color, #151e27);
+}
+
+/* Modales para el calendario */
+.modal-content {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border-color);
+}
+
+.modal-header {
+    background-color: var(--modal-header-bg);
+    color: var(--modal-header-text);
+    border-bottom-color: var(--border-color);
+}
+
+.modal-header.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.modal-footer {
+    border-top-color: var(--border-color);
+}
+
+#calendarTaskDetailsModal .modal-body h5 {
+    color: black;
+}
+
+/* Estilos de formulario dentro de los modales del calendario */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    background-color: rgb(255, 255, 255);
+    color: var(--card-text);
+    border-color: var(--border-color);
+}
+
+.form-control:focus {
+    border-color: var(--heading-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    color: #fff;
+    background-color: #545b62;
+    border-color: #4e555b;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    color: #fff;
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.btn-info {
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    color: #fff;
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+.mt-3.text-right {
+    margin-top: 1rem !important;
+    text-align: right !important;
+}

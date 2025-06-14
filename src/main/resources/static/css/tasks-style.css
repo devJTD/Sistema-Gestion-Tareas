@@ -1,0 +1,254 @@
+/* Define variables CSS para colores del tema Claro (para tasks.html) */
+body.theme-light {
+    --body-bg: #ffffff;
+    --main-content-bg: #ffffff;
+    --text-color: #212529;
+    --heading-color: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #fff;
+    --card-text: #212529;
+    --border-color: #000000;
+    --table-header-bg: #007bff;
+    --table-header-text: white;
+    --table-row-bg-stripe: #f2f2f2;
+    --table-row-hover-bg: #e2e6ea;
+    --modal-header-bg: #007bff;
+    --modal-header-text: white;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --h2: #000;
+    --status-completada-bg: #e9ecef;
+    --status-completada-text: #555;
+}
+
+/* Define variables CSS para colores del tema Oscuro (para tasks.html) */
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --main-content-bg: #343a40;
+    --text-color: #000000;
+    --heading-color: #ffffff;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #b1da9d;
+    --card-text: #000000;
+    --border-color: #5a6268;
+    --table-header-bg: #ffffff;
+    --table-header-text: white;
+    --table-row-bg-stripe: #d9d9d9;
+    --table-row-hover-bg: #6c757d;
+    --modal-header-bg: #17a2b8;
+    --modal-header-text: white;
+    --footer-bg: #212529;
+    --footer-text: #ced4da;
+    --status-completada-bg: #495057;
+    --status-completada-text: #ced4da;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+h1, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
+h2 {
+    color: var(--h2);
+}
+
+.filtroTitulo {
+    color: black;
+}
+
+.main-content {
+    flex: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--main-content-bg);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+.footer.bg-dark {
+    background-color: #343a40 !important;
+}
+
+.footer.text-white {
+    color: white !important;
+}
+
+.footer {
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+#footerA {
+    background-color: black;
+}
+
+/* Estilos específicos para tasks.html */
+.table-responsive {
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #f1f1f1;
+}
+
+.table {
+    margin-bottom: 0px;
+}
+
+.table-responsive thead th {
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
+    border-color: var(--border-color);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f1f1f1;
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--table-row-hover-bg);
+}
+
+.table tbody tr.task-status-completada {
+    background-color: var(--status-completada-bg);
+    color: var(--status-completada-text);
+    text-decoration: line-through;
+    opacity: 0.9;
+}
+
+.table tbody tr.task-status-completada td {
+    color: var(--status-completada-text);
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border-color);
+}
+
+.modal-header {
+    background-color: var(--modal-header-bg);
+    color: var(--modal-header-text);
+    border-bottom-color: var(--border-color);
+}
+
+.modal-header.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.modal-footer {
+    border-top-color: var(--border-color);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    background-color: rgb(255, 255, 255);
+    color: var(--card-text);
+    border-color: var(--border-color);
+}
+
+.form-control:focus {
+    border-color: var(--heading-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary,
+.btn-warning,
+.btn-danger,
+.btn-info,
+.btn-success,
+.btn-secondary,
+.btn-outline-primary,
+.btn-outline-secondary {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.btn-outline-secondary:hover {
+    color: #000000;
+}
+
+.row.mb-3.align-items-center {
+    margin-top: 1.5rem !important;
+}
+
+#trA i {
+    color: rgb(228, 228, 228);
+}
+
+#trA a {
+    color: rgb(228, 228, 228);
+}
+
+#BtnFiltros {
+    background-color: white;
+}

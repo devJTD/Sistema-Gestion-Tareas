@@ -1,0 +1,256 @@
+/* Define variables CSS para colores del tema Claro (para index.html) */
+body.theme-light {
+    --body-bg: #ffffff;
+    --main-content-bg: #ffffff;
+    --text-color: #212529;
+    --heading-color: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #fff;
+    --card-text: #212529;
+    --border-color: #000000;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --h2: #000;
+    --rotating-tip-bg: #406a42;
+    --rotating-tip-text: #ffffff;
+    --tasks-due-soon-item-bg: #f8f9fa;
+    --tasks-due-soon-item-text: #333;
+    --tasks-due-soon-duedate-text: #555;
+}
+
+/* Define variables CSS para colores del tema Oscuro (para index.html) */
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --main-content-bg: #343a40;
+    --text-color: #000000;
+    --heading-color: #ffffff;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #b1da9d;
+    --card-text: #000000;
+    --border-color: #5a6268;
+    --footer-bg: #212529;
+    --footer-text: #ced4da;
+    --rotating-tip-bg: #218838;
+    --rotating-tip-text: #ffffff;
+    --tasks-due-soon-item-bg: #ced4da;
+    --tasks-due-soon-item-text: #212529;
+    --tasks-due-soon-duedate-text: #555;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+h1, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
+h2 {
+    color: var(--h2);
+}
+
+.main-content {
+    flex: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--main-content-bg);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+.footer.bg-dark {
+    background-color: #343a40 !important;
+}
+
+.footer.text-white {
+    color: white !important;
+}
+
+.footer {
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+#footerA {
+    background-color: black;
+}
+
+/* Estilos específicos para index.html (Página principal) */
+.row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    margin-top: 20px;
+}
+
+#cards {
+    border: 0px solid black;
+}
+
+.task-card {
+    margin-bottom: 20px;
+    border-color: var(--border-color);
+}
+
+.card-header {
+    border-bottom-color: var(--border-color);
+}
+
+.card-footer {
+    border-top-color: var(--border-color);
+}
+
+#rotating-tip-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: var(--rotating-tip-bg);
+    border-radius: 8px;
+    text-align: center;
+    font-style: italic;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    color: var(--rotating-tip-text);
+}
+
+#rotating-tip {
+    font-size: 1.1rem;
+    color: var(--rotating-tip-text);
+    margin: 0;
+}
+
+#tasks-due-soon-section {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: var(--card-bg);
+    color: var(--card-text);
+}
+
+#tasks-due-soon-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    color: #212529; /* Siempre negro en este contexto, ajusta si es necesario */
+}
+
+#tasks-due-soon-section ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+#tasks-due-soon-section li {
+    background-color: var(--tasks-due-soon-item-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out;
+    color: var(--tasks-due-soon-item-text);
+}
+
+#tasks-due-soon-section li:hover {
+    background-color: var(--table-row-hover-bg); /* Reutilizando variable de tabla */
+}
+
+#tasks-due-soon-section li:last-child {
+    margin-bottom: 0;
+}
+
+#tasks-due-soon-section .task-title {
+    font-weight: bold;
+    flex-grow: 1;
+    margin-right: 15px;
+    color: var(--tasks-due-soon-item-text);
+    font-size: 1rem;
+}
+
+#tasks-due-soon-section .task-duedate {
+    font-size: 0.9em;
+    color: var(--tasks-due-soon-duedate-text);
+    flex-shrink: 0;
+}
+
+#carta3 {
+    background-color: #265b90;
+}
+
+body.theme-dark #carta3 {
+    color: var(--card-text);
+}
