@@ -1,4 +1,4 @@
-package com.freedom.tareas.Config;
+package com.freedom.tareas.Config; // Asegúrate de que el paquete sea correcto
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,24 +18,26 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-        // Obtener las autoridades (roles) del usuario autenticado
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        
-        // Verificar si el usuario tiene el rol ADMIN
-        boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        // Lógica de redirección
-        if (isAdmin) {
-            // Si es ADMIN, redirige siempre a /admin
-            response.sendRedirect("/admin");
-        } else {
-            // Si no es ADMIN (es decir, es USER), redirige siempre a /
-            response.sendRedirect("/");
+        // Si el usuario ya estaba autenticado e intenta ir a /login, redirigirlo a su página principal
+        if (request.getRequestURI().equals("/login")) {
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (isAdmin) {
+                response.sendRedirect("/admin");
+            } else {
+                response.sendRedirect("/");
+            }
+            return; // Importante para detener el procesamiento
         }
 
-        // Eliminamos el bloque `if (request.getRequestURI().equals("/login"))`
-        // porque la lógica de redirección ya es universal para ambos casos
-        // (tanto para el login inicial como para un re-login a la página /login).
-        // El AuthenticationSuccessHandler solo se activa si el login fue exitoso.
+        // Para inicios de sesión normales, redirige según el rol
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            response.sendRedirect("/admin"); // Redirige a /admin si es ADMIN
+        } else {
+            response.sendRedirect("/"); // Redirige a / para otros roles (ej. USER)
+        }
     }
 }
