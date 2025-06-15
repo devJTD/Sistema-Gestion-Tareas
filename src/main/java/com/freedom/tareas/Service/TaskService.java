@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.freedom.tareas.Model.Task;
-import com.freedom.tareas.Model.Usuario; 
+import com.freedom.tareas.Model.User; 
 import com.freedom.tareas.Repository.TaskRepository;
 
 import jakarta.validation.Valid;
@@ -45,18 +45,18 @@ public class TaskService {
     }
     
     @Transactional(readOnly = true)
-    public List<Task> getTasksByUser(Usuario user) {
+    public List<Task> getTasksByUser(User user) {
         return taskRepository.findByUsuarioAndActiveOnPage(user, "on"); 
     }
 
    @Transactional(readOnly = true)
-    public Optional<Task> getTaskByIdAndUser(Long id, Usuario user) {
+    public Optional<Task> getTaskByIdAndUser(Long id, User user) {
         return taskRepository.findByIdAndUsuario(id, user)
                              .filter(t -> "on".equalsIgnoreCase(t.getActiveOnPage())); 
     }
 
     @Transactional
-    public Task updateTaskForUser(Long id, @Valid Task updatedTask, Usuario user) {
+    public Task updateTaskForUser(Long id, @Valid Task updatedTask, User user) {
         Optional<Task> existingTaskOptional = taskRepository.findByIdAndUsuario(id, user); 
 
         if (existingTaskOptional.isPresent()) {
@@ -85,7 +85,7 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTaskForUser(Long id, Usuario user) {
+    public void deleteTaskForUser(Long id, User user) {
         Optional<Task> taskToSoftDelete = taskRepository.findByIdAndUsuario(id, user);
         if (taskToSoftDelete.isEmpty()) {
             throw new RuntimeException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
@@ -96,7 +96,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getFilteredAndSortedTasksByUser(Usuario user, String search, String statusFilter, String priorityFilter,
+    public List<Task> getFilteredAndSortedTasksByUser(User user, String search, String statusFilter, String priorityFilter,
                                                          String etiquetaFilter, String sortBy, String sortDir) {
         List<Task> userTasks = taskRepository.findByUsuarioAndActiveOnPage(user, "on"); 
 
@@ -144,7 +144,7 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getDueSoonTasksByUser(Usuario user, LocalDate today, LocalDate twoDaysFromNow) {
+    public List<Task> getDueSoonTasksByUser(User user, LocalDate today, LocalDate twoDaysFromNow) {
         return taskRepository.findByUsuarioAndActiveOnPage(user, "on").stream() 
                 .filter(task -> !"Completada".equalsIgnoreCase(task.getStatus()))
                 .filter(task -> task.getDueDate() != null &&

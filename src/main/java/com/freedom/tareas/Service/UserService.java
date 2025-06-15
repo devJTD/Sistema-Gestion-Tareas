@@ -1,15 +1,19 @@
 package com.freedom.tareas.Service;
 
-import com.freedom.tareas.Model.Usuario;
+import com.freedom.tareas.Model.Role; // Importa tu enum Role
+import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.User.UserBuilder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.GrantedAuthority; // Importa GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority; // Importa SimpleGrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList; // Necesario para ArrayList
+import java.util.List; // Necesario para List
 import java.util.Optional;
 
 @Service
@@ -23,30 +27,52 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public boolean crearUsuario(Usuario user) {
-        if (userRepository.existsByUsername(user.getUsername()) || userRepository.existsByEmail(user.getEmail())) {
+    /**
+     * Crea un nuevo usuario en el sistema.
+     * Por defecto, asigna el rol USER.
+     * @param usuario El objeto Usuario a guardar.
+     * @return true si el usuario fue creado, false si ya existe.
+     */
+    public boolean crearUsuario(User usuario) {
+        if (userRepository.existsByUsername(usuario.getUsername()) || userRepository.existsByEmail(usuario.getEmail())) {
             return false;
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        usuario.setRole(Role.USER); // <--- Asigna el rol USER por defecto en la creación común
+        userRepository.save(usuario);
         return true;
     }
 
+    /**
+     * Carga los detalles de un usuario por su nombre de usuario para Spring Security.
+     * Asigna las autoridades (roles) basadas en el campo 'role' del Usuario.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = userRepository
+        User usuario = userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        UserBuilder builder = User.withUsername(usuario.getUsername());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        // Asigna las autoridades de Spring Security basándose en el Role del Usuario
+        if (usuario.getRole() == Role.ADMIN) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        } else { // Si es Role.USER o cualquier otro valor por defecto
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+
+        // Construye y devuelve el objeto UserDetails de Spring Security
+        UserBuilder builder = org.springframework.security.core.userdetails.User.withUsername(usuario.getUsername());
         builder.password(usuario.getPassword());
-        builder.roles("USER"); 
+        builder.authorities(authorities);
+
 
         return builder.build();
     }
 
-    public Optional<Usuario> findByUsernameEntity(String username) {
+    public Optional<User> findByUsernameEntity(String username) {
         return userRepository.findByUsername(username);
     }
 }

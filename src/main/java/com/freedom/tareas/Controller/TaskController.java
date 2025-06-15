@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.freedom.tareas.Model.Task;
-import com.freedom.tareas.Model.Usuario; 
+import com.freedom.tareas.Model.User; 
 import com.freedom.tareas.Service.TaskService;
 import com.freedom.tareas.Service.UserService; 
 import org.springframework.security.core.Authentication; 
@@ -63,7 +63,7 @@ public class TaskController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        Usuario currentUser = userService.findByUsernameEntity(username) 
+        User currentUser = userService.findByUsernameEntity(username) 
                 .orElse(null); 
 
         List<Task> allTasks = new ArrayList<>();
@@ -111,7 +111,7 @@ public class TaskController {
             @RequestParam(value = "sortDir", required = false, defaultValue = "asc") String sortDir) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         List<Task> filteredTasks;
@@ -142,7 +142,7 @@ public class TaskController {
     public List<Map<String, Object>> getTasksForCalendar() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username) 
+        User currentUser = userService.findByUsernameEntity(username) 
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         List<Task> allTasks = taskService.getTasksByUser(currentUser);
@@ -201,7 +201,7 @@ public class TaskController {
             String username = authentication.getName(); 
                                                        
 
-            Usuario currentUser = userService.findByUsernameEntity(username)
+            User currentUser = userService.findByUsernameEntity(username)
                     .orElseThrow(() -> new RuntimeException(
                             "Usuario autenticado no encontrado en la base de datos: " + username));
 
@@ -226,7 +226,7 @@ public class TaskController {
     public String deleteTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         try {
@@ -253,7 +253,7 @@ public class TaskController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         try {

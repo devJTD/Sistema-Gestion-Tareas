@@ -33,7 +33,7 @@ public class Task {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Usuario usuario;
+    private User usuario;
 
     @NotBlank(message = "El título no puede estar vacío.")
     @Size(min = 3, max = 100, message = "El título debe tener entre 3 y 100 caracteres.")
@@ -68,7 +68,7 @@ public class Task {
     @Column(name = "activeOnPage")
     private String activeOnPage;
 
-    public Task(Usuario usuario, String title, String description, LocalDate dueDate, String priority, String status,
+    public Task(User usuario, String title, String description, LocalDate dueDate, String priority, String status,
             String activeOnPage) {
         this.usuario = usuario;
         this.title = title;
