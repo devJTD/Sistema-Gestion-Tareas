@@ -1,0 +1,77 @@
+/* Define variables CSS para colores del tema Claro */
+body.theme-light {
+    --body-bg: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+}
+
+/* Define variables CSS para colores del tema Oscuro */
+body.theme-dark {
+    --body-bg: #343a40;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color); /* Esta variable no se define en los estilos del header, pero se mantiene por si la usas en el body */
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}

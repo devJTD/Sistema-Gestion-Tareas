@@ -59,8 +59,6 @@ public class UserService implements UserDetailsService {
         // Asigna las autoridades de Spring Security basándose en el Role del Usuario
         if (usuario.getRole() == Role.ADMIN) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-              // Un ADMIN también debería tener acceso a las funcionalidades de USER
-            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         } else { // Si es Role.USER o cualquier otro valor por defecto
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         }

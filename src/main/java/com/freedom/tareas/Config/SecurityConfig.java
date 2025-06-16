@@ -41,7 +41,7 @@ public class SecurityConfig {
                 // 1. Rutas públicas (accesibles por cualquier persona, logueada o no)
                 // Esto incluye el login principal, registro, y ahora también la página de login de admin.
                 // Los **/** al final de la ruta permiten cualquier subruta, por ejemplo /login/cualquierecosa
-                .requestMatchers("/login/**", "/register/**", "/loginAdmin/**", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/login/**", "/register/**",  "/css/**", "/js/**", "/images/**").permitAll()
 
                 // 2. Rutas específicas para ADMIN
                 // Todas las rutas bajo /admin solo son accesibles por usuarios con rol ADMIN
@@ -49,7 +49,7 @@ public class SecurityConfig {
 
                 // 3. Rutas para USUARIOS COMUNES (y también por ADMINs, ya que un ADMIN suele tener también permisos de USER)
                 // Estas rutas requieren autenticación y que el usuario tenga el rol USER o ADMIN
-                .requestMatchers("/", "/tasks/**", "/calendar/**", "/api/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/", "/profile","/tasks/**", "/calendar/**", "/api/**", "/profile/**").hasAnyRole("USER", "ADMIN")
 
                 // 4. Cualquier otra solicitud que no haya sido explícitamente permitida o
                 // restringida por rol, será DENIEDA.
