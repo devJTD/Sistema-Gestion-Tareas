@@ -205,7 +205,7 @@ public class TaskController {
                     .orElseThrow(() -> new RuntimeException(
                             "Usuario autenticado no encontrado en la base de datos: " + username));
 
-            task.setUsuario(currentUser); 
+            task.setUser(currentUser); 
 
             if (task.getActiveOnPage() == null || task.getActiveOnPage().isEmpty()) {
                 task.setActiveOnPage("on");            }

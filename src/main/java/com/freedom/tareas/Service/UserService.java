@@ -75,4 +75,49 @@ public class UserService implements UserDetailsService {
     public Optional<User> findByUsernameEntity(String username) {
         return userRepository.findByUsername(username);
     }
+
+    /**
+     * Guarda un nuevo usuario en la base de datos.
+     * @param user El objeto User a guardar.
+     * @return El usuario guardado.
+     */
+    public User saveUser(User user) {
+        // Aquí podrías añadir lógica de negocio, como encriptar la contraseña
+        return userRepository.save(user);
+    }
+
+    /**
+     * Busca un usuario por su ID.
+     * @param id El ID del usuario.
+     * @return Un Optional que contiene el usuario si se encuentra, o vacío si no.
+     */
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    /**
+     * Busca un usuario por su nombre de usuario.
+     * @param username El nombre de usuario.
+     * @return Un Optional que contiene el usuario si se encuentra, o vacío si no.
+     */
+    public Optional<User> findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    /**
+     * **NUEVO MÉTODO:**
+     * Obtiene una lista de todos los usuarios registrados.
+     * @return Una lista de objetos User.
+     */
+    public List<User> findAllUsers() {
+        return userRepository.findAll(); // Llama al método findAll() de JpaRepository
+    }
+
+    /**
+     * Elimina un usuario por su ID.
+     * @param id El ID del usuario a eliminar.
+     */
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
 }

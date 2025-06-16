@@ -1,17 +1,53 @@
 /* Define variables CSS para colores del tema Claro */
 body.theme-light {
-    --body-bg: #ffffff;
+    --body-bg: #ffffff; /* Fondo principal del cuerpo se mantiene blanco */
     --navbar-bg: #343a40;
     --navbar-text: rgba(255, 255, 255, 0.75);
     --navbar-link-hover: rgba(255, 255, 255, 1);
+
+    /* Nuevas variables para el tema claro */
+    --card-bg: #e9ecef; /* Fondo de tarjeta: un gris claro más distintivo */
+    --card-text: #212529; /* Texto de tarjeta oscuro (para cards claras) */
+    --card-border: rgba(0, 0, 0, 0.25); /* Borde de tarjeta más visible */
+    --form-control-bg: #ffffff; /* Fondo de campos de formulario blanco */
+    --form-control-border: #adb5bd; /* Borde de campos de formulario más oscuro */
+    --form-control-text: #495057; /* Texto de campos de formulario */
+    --form-control-placeholder: #6c757d; /* Placeholder de campos de formulario */
+    --primary-color: #007bff; /* Color primario de Bootstrap para headers de card */
+    --heading-color: #343a40; /* Color para títulos h1, h2 */
+    --body-text: #212529; /* Color de texto general del body en tema claro (negro) */
+
+    /* Colores para modales en tema claro (ya son por defecto claros) */
+    --modal-bg: #ffffff;
+    --modal-text: #212529;
+    --modal-border: rgba(0, 0, 0, 0.2);
+    --modal-close-color: #000000;
 }
 
 /* Define variables CSS para colores del tema Oscuro */
 body.theme-dark {
-    --body-bg: #343a40;
+    --body-bg: #343a40; /* Se mantiene el color oscuro original del body */
     --navbar-bg: #212529;
     --navbar-text: rgba(255, 255, 255, 0.85);
     --navbar-link-hover: rgba(255, 255, 255, 1);
+
+    /* Nuevas variables para el tema oscuro */
+    --card-bg: #f8f9fa; /* **Fondo de tarjeta CLARO en tema oscuro (blanco casi puro)** */
+    --card-text: #212529; /* **Texto de tarjeta oscuro para contrastar con el fondo de tarjeta CLARO** */
+    --card-border: #99a2ab; /* Borde de tarjeta más notorio en oscuro */
+    --form-control-bg: #e9ecef; /* **Fondo de campos de formulario ligeramente gris para contraste** */
+    --form-control-border: #adb5bd; /* Borde de campos de formulario oscuro */
+    --form-control-text: #212529; /* **Texto de campos de formulario oscuro** */
+    --form-control-placeholder: #6c757d; /* Placeholder de campos de formulario */
+    --primary-color: #6c757d; /* Un color primario más suave para el tema oscuro */
+    --heading-color: #f8f9fa; /* Color para títulos h1, h2 */
+    --body-text: #f8f9fa; /* **Color de texto general del body en tema oscuro (blanco)** */
+
+    /* Colores para modales en tema oscuro */
+    --modal-bg: #343a40; /* Fondo oscuro para el modal */
+    --modal-text: #f8f9fa; /* Texto claro para el modal */
+    --modal-border: #454d55; /* Bordes más oscuros */
+    --modal-close-color: #f8f9fa; /* Color de la 'x' de cerrar */
 }
 
 body {
@@ -19,7 +55,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     background-color: var(--body-bg);
-    color: var(--text-color); /* Esta variable no se define en los estilos del header, pero se mantiene por si la usas en el body */
+    color: var(--body-text);
 }
 
 .navbar {
@@ -64,9 +100,10 @@ body {
     color: var(--navbar-link-hover);
 }
 
-.navbar-dark .navbar-nav .nav-link.active,
-.navbar-dark .navbar-nav .nav-link.active:hover {
-    color: var(--navbar-link-hover);
+/* Estilo para el enlace activo de la navbar */
+.navbar-nav .nav-item .nav-link.active {
+    color: var(--navbar-link-hover) !important;
+    font-weight: bold;
 }
 
 #profile-image {
@@ -75,3 +112,222 @@ body {
     object-fit: cover;
     border-radius: 50% !important;
 }
+
+/* Ajusta el padding superior del contenido principal para la navbar fija */
+.main-content {
+    padding-top: 80px;
+}
+
+/* Estilo para los títulos principales de la página */
+.main-content h1, .main-content h2 {
+    color: var(--heading-color);
+}
+
+/* Ajustes generales para las tarjetas para usar las variables de tema */
+.card {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border: 2px solid var(--card-border);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    color: white !important;
+    border-bottom: 1px solid var(--card-border);
+}
+
+/* Estilos para los cuerpos de tarjeta dentro de las secciones de usuario/tareas */
+#userInfoSection .card-body,
+#userTasksSection .card-body {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    padding: 1.5rem;
+}
+
+/* Ajustes para el contenedor de información del usuario */
+#userInfoSection .card-body p {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+#userInfoSection .card-body strong {
+    flex-shrink: 0;
+    margin-right: 1rem;
+    color: var(--primary-color);
+    width: 180px;
+    text-align: right;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+#userInfoSection .card-body span {
+    flex-grow: 1;
+    word-break: break-word;
+    min-width: 0;
+}
+
+/* Estilos para la lista de tareas */
+#userTasksList {
+    margin-top: 1rem;
+}
+
+#userTasksList .list-group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 1.25rem;
+    position: relative;
+    background-color: var(--form-control-bg); /* Un fondo que contraste un poco más que el card-body */
+    color: var(--form-control-text); /* Color de texto del tema */
+    border: 1px solid var(--form-control-border);
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Estilos para cada item de tarea en la lista (elementos internos) */
+.task-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: var(--card-text);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-status {
+    font-size: 0.9rem;
+    padding: 0.4em 0.7em;
+    border-radius: 0.25rem;
+}
+
+.task-description {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--card-text);
+    flex-grow: 1;
+}
+
+.task-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.task-details .badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.8em;
+    border-radius: 0.25rem;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Estilos para los botones de editar/eliminar */
+.edit-task-btn, .delete-task-btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+
+/* Estilo para el mensaje inicial de tareas */
+#initialTasksMessage {
+    background-color: var(--card-bg);
+    color: var(--form-control-placeholder);
+    font-style: italic;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px dashed var(--form-control-border);
+}
+
+/* Ajustes para el select de usuario */
+.form-group #userSelect {
+    max-width: 400px;
+    width: 100%;
+    background-color: var(--form-control-bg);
+    border: 2px solid var(--form-control-border);
+    color: var(--form-control-text);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#userSelect option {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+}
+
+/* Asegurarse que el color del placeholder se aplique */
+.form-control::placeholder {
+    color: var(--form-control-placeholder);
+}
+
+/* Ajustes adicionales para el SELECT en el tema oscuro para que se vea bien */
+body.theme-dark #userSelect {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border-color: var(--form-control-border);
+}
+
+body.theme-dark #userSelect option {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+}
+
+---
+/* **Estilos específicos para Modales (movidos desde el HTML)** */
+/* Estos estilos se aplican a los modales en ambos temas, usando las variables definidas. */
+/* Si necesitas anular el comportamiento predeterminado de Bootstrap, usa !important con cuidado. */
+
+.modal-content {
+    background-color: var(--modal-bg);
+    color: var(--modal-text);
+    border: 1px solid var(--modal-border);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--modal-border);
+}
+
+.modal-body label {
+    color: inherit; /* Hereda el color del texto del modal-content */
+}
+
+/* Ajustes para inputs dentro de modales */
+.modal-body .form-control {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border-color: var(--form-control-border);
+}
+
+.modal-body .form-control::placeholder {
+    color: var(--form-control-placeholder);
+}
+
+.modal-body .form-control:focus {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border-color: #80bdff; /* Color de foco Bootstrap */
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+}
+
+.modal-body .close {
+    color: var(--modal-close-color);
+}
+
+/* Estilo para las opciones del select dentro de los modales */
+.modal-body select.form-control option {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+}
+
+/* Asegurar que el estado "CANCELADA" esté disponible en el select del modal de edición */
+/* Agrega esta opción en tu HTML si no está presente: */
+/* <option value="CANCELADA">Cancelada</option> */
