@@ -64,6 +64,7 @@ public class UserService implements UserDetailsService {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         // Asigna las autoridades de Spring Security basándose en el Role del Usuario
+        // NOTA: Spring Security prefiere los roles con prefijo "ROLE_", ej., "ROLE_ADMIN"
         if (usuario.getRole() == Role.ADMIN) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         } else { // Si es Role.USER o cualquier otro valor por defecto
@@ -89,7 +90,7 @@ public class UserService implements UserDetailsService {
      * @return El usuario guardado.
      */
     public User saveUser(User user) {
-        // Aquí podrías añadir lógica de negocio, como encriptar la contraseña
+        // Aquí podrías añadir lógica de negocio, como encriptar la contraseña si no se hizo antes
         return userRepository.save(user);
     }
 
@@ -112,7 +113,6 @@ public class UserService implements UserDetailsService {
     }
 
     /**
-     * **NUEVO MÉTODO:**
      * Obtiene una lista de todos los usuarios registrados.
      * @return Una lista de objetos User.
      */
@@ -128,17 +128,65 @@ public class UserService implements UserDetailsService {
         userRepository.deleteById(id);
     }
 
+    /**
+     * Elimina un usuario y todas sus tareas asociadas.
+     * @param userId El ID del usuario a eliminar.
+     * @throws UserNotFoundException Si el usuario con el ID especificado no se encuentra.
+     */
     @Transactional // Asegura que la eliminación de usuario y tareas sea atómica
     public void deleteUserAndAssociatedTasks(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {
             // Eliminar todas las tareas asociadas a este usuario primero
-            taskRepository.deleteByUserId(userId); // Asume que tienes este método en tu TaskRepository
+            // Asegúrate de que TaskRepository.deleteByUserId() exista y funcione correctamente
+            taskRepository.deleteByUserId(userId); 
 
             // Luego, eliminar el usuario
             userRepository.deleteById(userId);
         } else {
-            throw new IllegalArgumentException("Usuario con ID " + userId + " no encontrado.");
+            // Lanza la excepción personalizada para un manejo más claro
+            throw new UserNotFoundException("Usuario con ID " + userId + " no encontrado para eliminación.");
+        }
+    }
+
+    /**
+     * Asigna el rol de ADMINISTRADOR a un usuario específico.
+     * @param userId El ID del usuario al que se le asignará el rol de ADMIN.
+     * @throws UserNotFoundException Si el usuario con el ID especificado no se encuentra.
+     * @throws IllegalArgumentException Si el usuario ya tiene el rol de ADMIN.
+     */
+    @Transactional // Asegura que la operación sea atómica: o se completa o se revierte.
+    public void assignAdminRole(Long userId) {
+        // 1. Buscar el usuario por ID
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        // 2. Verificar si el usuario existe
+        if (userOptional.isEmpty()) {
+            // Lanza una excepción si el usuario no se encuentra.
+            throw new UserNotFoundException("Usuario con ID " + userId + " no encontrado para asignar rol de administrador.");
+        }
+
+        User user = userOptional.get();
+
+        // 3. Opcional: Verificar si el usuario ya es ADMIN para evitar operaciones innecesarias
+        if (user.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException("El usuario con ID " + userId + " ya tiene el rol de ADMIN.");
+        }
+
+        // 4. Asignar el nuevo rol a ADMIN
+        user.setRole(Role.ADMIN); // Asigna el valor del enum Role.ADMIN
+
+        // 5. Guardar los cambios en la base de datos
+        userRepository.save(user);
+    }
+
+    /**
+     * Excepción personalizada para cuando un usuario no es encontrado.
+     * Facilita el manejo específico de este error en los controladores.
+     */
+    public static class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(String message) {
+            super(message);
         }
     }
 }

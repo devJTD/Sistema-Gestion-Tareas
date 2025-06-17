@@ -4,6 +4,7 @@ import com.freedom.tareas.Model.Task;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Service.TaskService;
 import com.freedom.tareas.Service.UserService;
+import com.freedom.tareas.Service.UserService.UserNotFoundException; // Importa tu excepción personalizada
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/admin") // Base URL for admin operations
+@RequestMapping("/admin") // Base URL for admin operations (Se mantiene así para el HTML y otras APIs)
 @PreAuthorize("hasRole('ADMIN')") // Solo usuarios con rol ADMIN pueden acceder
 public class AdminController {
 
     private final UserService userService;
     private final TaskService taskService;
 
-    // Constructor actualizado para inyectar TaskService
     public AdminController(UserService userService, TaskService taskService) {
         this.userService = userService;
         this.taskService = taskService;
@@ -101,23 +101,36 @@ public class AdminController {
         }
     }
 
-
     // **AÑADE ESTE NUEVO ENDPOINT para eliminar USUARIOS**
     @DeleteMapping("/api/users/{userId}")
     @ResponseBody
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        // Lógica para eliminar el usuario y todas sus tareas asociadas
-        // Esto es crucial para mantener la integridad de la base de datos
         try {
-            userService.deleteUserAndAssociatedTasks(userId); // Debes crear este método en UserService
+            userService.deleteUserAndAssociatedTasks(userId);
             return ResponseEntity.noContent().build(); // 204 No Content para eliminación exitosa
-        } catch (IllegalArgumentException e) {
-            // Si el usuario no se encuentra
-            return ResponseEntity.notFound().build(); // 404 Not Found
+        } catch (UserNotFoundException e) { // Usamos la excepción personalizada
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
         } catch (Exception e) {
-            // Para cualquier otro error durante la eliminación
             System.err.println("Error al eliminar usuario: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+    // **¡EL MÉTODO QUE ESTABA DANDO PROBLEMAS!**
+    // Se corrige la ruta para que coincida con lo que envía el frontend: /admin/api/users/{userId}/assign-admin
+    @PutMapping("/api/users/{userId}/assign-admin") // <--- ¡CAMBIO AQUÍ!
+    @ResponseBody // Necesario para que devuelva una respuesta JSON/texto en lugar de un nombre de vista
+    public ResponseEntity<?> assignAdminRole(@PathVariable Long userId) {
+        try {
+            userService.assignAdminRole(userId); // Llama a tu método de servicio para actualizar el rol del usuario
+            return ResponseEntity.ok().build(); // Devuelve 200 OK
+        } catch (UserNotFoundException e) { // Usa tu excepción personalizada
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()); // Devuelve 404 con mensaje
+        } catch (IllegalArgumentException e) { // Para el caso de que ya sea ADMIN
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); // Devuelve 400 con mensaje
+        } catch (Exception e) {
+            System.err.println("Error al asignar rol de administrador al usuario " + userId + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al asignar rol de administrador: " + e.getMessage());
         }
     }
 }
