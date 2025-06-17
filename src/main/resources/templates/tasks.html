@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
   <link rel="stylesheet" th:href="@{/css/tasks-style.css}">
 </head>
-
 <body class="with-fixed-navbar theme-light">
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <a class="navbar-brand" th:href="@{/}">
@@ -223,9 +221,9 @@
         </thead>
         <tbody>
           <tr th:each="task : ${tasks}" th:classappend="
-                            ${task.priority != null ? 'task-priority-' + #strings.toLowerCase(task.priority) : ''} +
-                            ${task.status != null ? ' task-status-' + #strings.toLowerCase(task.status) : ''}
-                        ">
+                        ${task.priority != null ? 'task-priority-' + #strings.toLowerCase(task.priority) : ''} +
+                        ${task.status != null ? ' task-status-' + #strings.toLowerCase(task.status) : ''}
+                      ">
             <td th:text="${task.id}">1</td>
             <td th:text="${task.title}">Diseñar UI</td>
             <td th:text="${task.description}">Crear mockups.</td>
@@ -248,12 +246,12 @@
             <td>
               <button type="button" class="btn btn-sm btn-info edit-task-btn" data-toggle="modal"
                 data-target="#editTaskModal" th:attr="data-task-id=${task.id},
-                                         data-task-title=${task.title},
-                                         data-task-description=${task.description},
-                                         data-task-duedate=${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''},
-                                         data-task-priority=${task.priority},
-                                         data-task-status=${task.status},
-                                         data-task-etiqueta=${task.etiqueta}" title="Editar">
+                                      data-task-title=${task.title},
+                                      data-task-description=${task.description},
+                                      data-task-duedate=${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''},
+                                      data-task-priority=${task.priority},
+                                      data-task-status=${task.status},
+                                      data-task-etiqueta=${task.etiqueta}" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
 

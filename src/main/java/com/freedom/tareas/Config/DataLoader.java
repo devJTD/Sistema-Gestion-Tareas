@@ -1,4 +1,4 @@
-package com.freedom.tareas.Config; // Puedes ponerlo en Config o en un paquete util.
+package com.freedom.tareas.Config;
 
 import com.freedom.tareas.Model.Role;
 import com.freedom.tareas.Model.User;
@@ -20,15 +20,12 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Verifica si ya existe un usuario ADMIN.
-        // Puedes buscar por username fijo o por la existencia de cualquier ADMIN.
         if (userRepository.findByUsername("admin").isEmpty()) {
-            // Si no existe, crea el usuario ADMIN
             User adminUser = new User();
             adminUser.setUsername("admin");
             adminUser.setEmail("admin@example.com");
-            adminUser.setPassword(passwordEncoder.encode("adminpass")); // ¡Cambia esta contraseña por una fuerte en producción!
-            adminUser.setRole(Role.ADMIN); // Asigna el rol ADMIN
+            adminUser.setPassword(passwordEncoder.encode("adminpass"));
+            adminUser.setRole(Role.ADMIN);
 
             userRepository.save(adminUser);
             System.out.println("Usuario ADMIN 'admin' creado exitosamente.");

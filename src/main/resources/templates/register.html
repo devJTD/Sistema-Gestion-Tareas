@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/login-style.css}">
 </head>
-
 <body class="login-page">
     <div class="logo-container">
         <img id="logo" th:src="@{/images/logo.png}" alt="Logo de la Aplicación">
@@ -21,7 +19,6 @@
             <h2>Registro de Usuario</h2>
         </div>
 
-        <!-- Mensaje de error o éxito -->
         <div th:if="${param.error}" class="alert alert-danger" role="alert">
             <i class="fas fa-exclamation-triangle"></i> Ha ocurrido un error durante el registro.
         </div>
@@ -29,7 +26,6 @@
             <i class="fas fa-check-circle"></i> Registro exitoso. Ahora puede iniciar sesión.
         </div>
 
-        <!-- Formulario de registro -->
         <form id="registroForm" th:action="@{/register}" method="post">
             <div class="form-group">
                 <label for="username"><i class="fas fa-user"></i> Nombre de Usuario</label>
@@ -49,7 +45,6 @@
             <button type="submit" class="btn btn-success btn-block"><i class="fas fa-user-plus"></i>
                 Registrarse</button>
         </form>
-        <!-- Botón de volver -->
         <div class="text-center mt-3">
             <a th:href="@{/login}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver a Login
@@ -61,5 +56,4 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
-
 </html>

@@ -8,8 +8,8 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/admin-style.css}">
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 
 <body class="with-fixed-navbar theme-light">
@@ -85,10 +85,12 @@
         </div>
 
         <div id="userActionButtons" class="d-flex justify-content-center mb-4">
-            <button class="btn btn-info mr-2" type="button" id="assignAdminRoleBtn" data-toggle="modal" data-target="#confirmAssignAdminModal" disabled>
+            <button class="btn btn-info mr-2" type="button" id="assignAdminRoleBtn" data-toggle="modal"
+                data-target="#confirmAssignAdminModal" disabled>
                 <i class="fas fa-user-shield"></i> Dar Rol Admin
             </button>
-            <button class="btn btn-danger" type="button" id="deleteUserBtn" data-toggle="modal" data-target="#confirmDeleteUserModal" disabled>
+            <button class="btn btn-danger" type="button" id="deleteUserBtn" data-toggle="modal"
+                data-target="#confirmDeleteUserModal" disabled>
                 <i class="fas fa-user-minus"></i> Eliminar Usuario
             </button>
         </div>
@@ -120,7 +122,8 @@
 
     </div>
 
-    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -138,7 +141,8 @@
                         </div>
                         <div class="form-group">
                             <label for="editTaskDescription">Descripción</label>
-                            <textarea class="form-control" id="editTaskDescription" name="description" rows="3"></textarea>
+                            <textarea class="form-control" id="editTaskDescription" name="description"
+                                rows="3"></textarea>
                         </div>
                         <div class="form-group">
                             <label for="editTaskDueDate">Fecha de Vencimiento</label>
@@ -160,10 +164,10 @@
                                 <option value="Completada">Completada</option>
                             </select>
                         </div>
-                           <div class="form-group">
-                                <label for="editTaskEtiqueta">Etiqueta</label>
-                                <input type="text" class="form-control" id="editTaskEtiqueta" name="etiqueta">
-                            </div>
+                        <div class="form-group">
+                            <label for="editTaskEtiqueta">Etiqueta</label>
+                            <input type="text" class="form-control" id="editTaskEtiqueta" name="etiqueta">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -174,7 +178,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
+        aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -195,7 +200,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="confirmDeleteUserModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteUserModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteUserModal" tabindex="-1" role="dialog"
+        aria-labelledby="confirmDeleteUserModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -206,8 +212,10 @@
                 </div>
                 <div class="modal-body">
                     <p>Estás a punto de eliminar al usuario **<span id="userToDeleteUsername"></span>**.</p>
-                    <p class="text-danger">**¡ADVERTENCIA!** Esta acción es irreversible y eliminará **todas las tareas asociadas** a este usuario. ¿Estás absolutamente seguro de que deseas continuar?</p>
-                    <input type="hidden" id="deleteUserId"> </div>
+                    <p class="text-danger">**¡ADVERTENCIA!** Esta acción es irreversible y eliminará **todas las tareas
+                        asociadas** a este usuario. ¿Estás absolutamente seguro de que deseas continuar?</p>
+                    <input type="hidden" id="deleteUserId">
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteUserButton">Eliminar Usuario</button>
@@ -216,7 +224,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="confirmAssignAdminModal" tabindex="-1" role="dialog" aria-labelledby="confirmAssignAdminModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmAssignAdminModal" tabindex="-1" role="dialog"
+        aria-labelledby="confirmAssignAdminModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -226,7 +235,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>¿Estás seguro de que quieres dar el rol de **ADMIN** a "<span id="userToAssignAdminUsername"></span>"?</p>
+                    <p>¿Estás seguro de que quieres dar el rol de **ADMIN** a "<span
+                            id="userToAssignAdminUsername"></span>"?</p>
                     <input type="hidden" id="assignAdminUserId">
                 </div>
                 <div class="modal-footer">
@@ -237,7 +247,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -247,7 +258,7 @@
                     </button>
                 </div>
                 <div class="modal-body" id="messageModalBody">
-                    </div>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
                 </div>

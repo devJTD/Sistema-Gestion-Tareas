@@ -2,15 +2,15 @@ package com.freedom.tareas.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType; // Importar para EnumType
-import jakarta.persistence.Enumerated; // Importar para Enumerated
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull; // Importar para NotNull
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,16 +43,15 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @NotNull(message = "El rol no puede ser nulo.") // Asegura que el rol no sea nulo
-    @Enumerated(EnumType.STRING) // Almacena el enum como String en la BD (ej. "ADMIN", "USER")
-    @Column(name = "role", nullable = false, length = 20) // Ajusta la longitud si es necesario
-    private Role role; // Nuevo campo para el rol del usuario
+    @NotNull(message = "El rol no puede ser nulo.")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private Role role;
 
-    // Constructor adicional para crear usuarios sin el campo id, pero con el rol
     public User(String username, String password, String email, Role role) {
         this.username = username;
         this.password = password;
         this.email = email;
-        this.role = role; // Asigna el rol aquí
+        this.role = role;
     }
 }

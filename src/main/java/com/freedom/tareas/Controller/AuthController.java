@@ -24,20 +24,13 @@ public class AuthController {
     @GetMapping("/login")
     public String loginPage(Model model, HttpServletRequest request) {
         model.addAttribute("currentUri", request.getRequestURI());
-        // Obtiene la información de autenticación del contexto de seguridad
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Verifica si el usuario ya está autenticado
-        // `isAuthenticated()` verifica que no sea anónimo ni nulo
         if (authentication != null && authentication.isAuthenticated() &&
-            // Importante: También verifica que no sea una autenticación anónima,
-            // que Spring Security usa para usuarios no autenticados por defecto
-            !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
-            // Si el usuario ya está logueado, redirigirlo a la página principal
+                !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
             return "redirect:/";
         }
-        // Si no está logueado, muestra la página de login
-        return "login"; // Asume que tienes una vista llamada 'login.html' o 'login.jsp'
+        return "login";
     }
 
     @GetMapping("/register")
