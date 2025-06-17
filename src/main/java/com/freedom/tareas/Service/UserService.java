@@ -2,7 +2,11 @@ package com.freedom.tareas.Service;
 
 import com.freedom.tareas.Model.Role; // Importa tu enum Role
 import com.freedom.tareas.Model.User;
+import com.freedom.tareas.Repository.TaskRepository;
 import com.freedom.tareas.Repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,10 +25,13 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TaskRepository taskRepository; // Inyecta el TaskRepository
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TaskRepository taskRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.taskRepository = taskRepository;
     }
 
     /**
@@ -119,5 +126,19 @@ public class UserService implements UserDetailsService {
      */
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Transactional // Asegura que la eliminación de usuario y tareas sea atómica
+    public void deleteUserAndAssociatedTasks(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            // Eliminar todas las tareas asociadas a este usuario primero
+            taskRepository.deleteByUserId(userId); // Asume que tienes este método en tu TaskRepository
+
+            // Luego, eliminar el usuario
+            userRepository.deleteById(userId);
+        } else {
+            throw new IllegalArgumentException("Usuario con ID " + userId + " no encontrado.");
+        }
     }
 }

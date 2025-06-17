@@ -280,8 +280,7 @@ body.theme-dark #userSelect option {
     color: var(--form-control-text);
 }
 
----
-/* **Estilos específicos para Modales (movidos desde el HTML)** */
+/* Estilos específicos para Modales (movidos desde el HTML) */
 /* Estos estilos se aplican a los modales en ambos temas, usando las variables definidas. */
 /* Si necesitas anular el comportamiento predeterminado de Bootstrap, usa !important con cuidado. */
 

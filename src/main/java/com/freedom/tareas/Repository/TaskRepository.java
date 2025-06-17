@@ -31,5 +31,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUser_IdAndActiveOnPage(Long userId, String activeOnPage);
     Optional<Task> findByIdAndUser_Id(Long taskId, Long userId);
 
+    void deleteByUserId(Long userId); // Spring Data JPA lo implementará automáticamente si sigues la convención
+
 
 }
