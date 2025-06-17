@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.freedom.tareas.Model.Task;
-import com.freedom.tareas.Model.Usuario; 
+import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Service.TaskService;
-import com.freedom.tareas.Service.UserService; 
-import org.springframework.security.core.Authentication; 
-import org.springframework.security.core.context.SecurityContextHolder; 
+import com.freedom.tareas.Service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,12 +36,12 @@ import jakarta.validation.Valid;
 public class TaskController {
 
     private final TaskService taskService;
-    private final UserService userService; // Inyecta el UserService
+    private final UserService userService;
     private final List<String> organizationTips = new ArrayList<>();
 
-    public TaskController(TaskService taskService, UserService userService) { 
+    public TaskController(TaskService taskService, UserService userService) {
         this.taskService = taskService;
-        this.userService = userService; 
+        this.userService = userService;
         initializeTips();
     }
 
@@ -63,8 +63,8 @@ public class TaskController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        Usuario currentUser = userService.findByUsernameEntity(username) 
-                .orElse(null); 
+        User currentUser = userService.findByUsernameEntity(username)
+                .orElse(null);
 
         List<Task> allTasks = new ArrayList<>();
         if (currentUser != null) {
@@ -81,7 +81,7 @@ public class TaskController {
         LocalDate today = LocalDate.now();
         LocalDate twoDaysFromNow = today.plusDays(2);
 
-        List<Task> tasksDueSoon = taskService.getDueSoonTasksByUser(currentUser, today, twoDaysFromNow); 
+        List<Task> tasksDueSoon = taskService.getDueSoonTasksByUser(currentUser, today, twoDaysFromNow);
 
         model.addAttribute("tasksDueSoon", tasksDueSoon);
 
@@ -111,7 +111,7 @@ public class TaskController {
             @RequestParam(value = "sortDir", required = false, defaultValue = "asc") String sortDir) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         List<Task> filteredTasks;
@@ -142,7 +142,7 @@ public class TaskController {
     public List<Map<String, Object>> getTasksForCalendar() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username) 
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         List<Task> allTasks = taskService.getTasksByUser(currentUser);
@@ -198,39 +198,39 @@ public class TaskController {
 
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName(); 
-                                                       
+            String username = authentication.getName();
 
-            Usuario currentUser = userService.findByUsernameEntity(username)
+            User currentUser = userService.findByUsernameEntity(username)
                     .orElseThrow(() -> new RuntimeException(
                             "Usuario autenticado no encontrado en la base de datos: " + username));
 
-            task.setUsuario(currentUser); 
+            task.setUser(currentUser);
 
             if (task.getActiveOnPage() == null || task.getActiveOnPage().isEmpty()) {
-                task.setActiveOnPage("on");            }
+                task.setActiveOnPage("on");
+            }
 
-            taskService.createTask(task); 
+            taskService.createTask(task);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tarea agregada exitosamente!");
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage", "Error al agregar tarea: " + e.getMessage());
             model.addAttribute("currentUri", "/tasks/add");
             model.addAttribute("taskFormObject", task);
-            return "add-task"; 
+            return "add-task";
         }
-        return "redirect:/tasks"; 
+        return "redirect:/tasks";
     }
 
     @PostMapping("/tasks/delete/{id}")
     public String deleteTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         try {
-            taskService.deleteTaskForUser(id, currentUser); 
+            taskService.deleteTaskForUser(id, currentUser);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tarea eliminada exitosamente!");
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar: " + e.getMessage());
@@ -253,7 +253,7 @@ public class TaskController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Usuario currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.findByUsernameEntity(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         try {

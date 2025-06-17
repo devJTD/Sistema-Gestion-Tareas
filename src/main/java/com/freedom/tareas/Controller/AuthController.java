@@ -1,11 +1,14 @@
 package com.freedom.tareas.Controller;
 
-import com.freedom.tareas.Model.Usuario;
+import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Service.UserService;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,17 +24,23 @@ public class AuthController {
     @GetMapping("/login")
     public String loginPage(Model model, HttpServletRequest request) {
         model.addAttribute("currentUri", request.getRequestURI());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() &&
+                !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
+            return "redirect:/";
+        }
         return "login";
     }
 
     @GetMapping("/register")
     public String mostrarFormularioRegistro(Model model) {
-        model.addAttribute("usuario", new Usuario());
+        model.addAttribute("usuario", new User());
         return "register";
     }
 
     @PostMapping("/register")
-    public String procesarRegistro(@ModelAttribute("usuario") Usuario usuario, Model model) {
+    public String procesarRegistro(@ModelAttribute("usuario") User usuario, Model model) {
         boolean creado = userService.crearUsuario(usuario);
 
         if (!creado) {

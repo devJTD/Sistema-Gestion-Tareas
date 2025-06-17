@@ -1,0 +1,296 @@
+body.theme-light {
+    --body-bg: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #e9ecef;
+    --card-text: #212529;
+    --card-border: rgba(0, 0, 0, 0.25);
+    --form-control-bg: #ffffff;
+    --form-control-border: #adb5bd;
+    --form-control-text: #495057;
+    --form-control-placeholder: #6c757d;
+    --primary-color: #007bff;
+    --heading-color: #343a40;
+    --body-text: #212529;
+    --modal-bg: #ffffff;
+    --modal-text: #212529;
+    --modal-border: rgba(0, 0, 0, 0.2);
+    --modal-close-color: #000000;
+}
+
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #f8f9fa;
+    --card-text: #212529;
+    --card-border: #99a2ab;
+    --form-control-bg: #e9ecef;
+    --form-control-border: #adb5bd;
+    --form-control-text: #212529;
+    --form-control-placeholder: #6c757d;
+    --primary-color: #6c757d;
+    --heading-color: #f8f9fa;
+    --body-text: #f8f9fa;
+    --modal-bg: #343a40;
+    --modal-text: #f8f9fa;
+    --modal-border: #454d55;
+    --modal-close-color: #f8f9fa;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--body-text);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-nav .nav-item .nav-link.active {
+    color: var(--navbar-link-hover) !important;
+    font-weight: bold;
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+.main-content {
+    padding-top: 80px;
+}
+
+.main-content h1, .main-content h2 {
+    color: var(--heading-color);
+}
+
+.card {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border: 2px solid var(--card-border);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    color: white !important;
+    border-bottom: 1px solid var(--card-border);
+}
+
+#userInfoSection .card-body,
+#userTasksSection .card-body {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    padding: 1.5rem;
+}
+
+#userInfoSection .card-body p {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+#userInfoSection .card-body strong {
+    flex-shrink: 0;
+    margin-right: 1rem;
+    color: var(--primary-color);
+    width: 180px;
+    text-align: right;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+#userInfoSection .card-body span {
+    flex-grow: 1;
+    word-break: break-word;
+    min-width: 0;
+}
+
+#userTasksList {
+    margin-top: 1rem;
+}
+
+#userTasksList .list-group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 1.25rem;
+    position: relative;
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border: 1px solid var(--form-control-border);
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.task-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: var(--card-text);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-status {
+    font-size: 0.9rem;
+    padding: 0.4em 0.7em;
+    border-radius: 0.25rem;
+}
+
+.task-description {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--card-text);
+    flex-grow: 1;
+}
+
+.task-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.task-details .badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.8em;
+    border-radius: 0.25rem;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.edit-task-btn, .delete-task-btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+
+#initialTasksMessage {
+    background-color: var(--card-bg);
+    color: var(--form-control-placeholder);
+    font-style: italic;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px dashed var(--form-control-border);
+}
+
+.form-group #userSelect {
+    max-width: 400px;
+    width: 100%;
+    background-color: var(--form-control-bg);
+    border: 2px solid var(--form-control-border);
+    color: var(--form-control-text);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#userSelect option {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+}
+
+.form-control::placeholder {
+    color: var(--form-control-placeholder);
+}
+
+body.theme-dark #userSelect {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border-color: var(--form-control-border);
+}
+
+body.theme-dark #userSelect option {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+}
+
+.modal-content {
+    background-color: var(--modal-bg);
+    color: var(--modal-text);
+    border: 1px solid var(--modal-border);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--modal-border);
+}
+
+.modal-body label {
+    color: inherit;
+}
+
+.modal-body .form-control {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border-color: var(--form-control-border);
+}
+
+.modal-body .form-control::placeholder {
+    color: var(--form-control-placeholder);
+}
+
+.modal-body .form-control:focus {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+}
+
+.modal-body .close {
+    color: var(--modal-close-color);
+}
+
+.modal-body select.form-control option {
+    background-color: var(--form-control-bg);
+    color: var(--form-control-text);
+}

@@ -1,4 +1,3 @@
-/* Define variables CSS para colores del tema Claro (para calendar.html) */
 body.theme-light {
     --body-bg: #ffffff;
     --main-content-bg: #ffffff;
@@ -17,7 +16,6 @@ body.theme-light {
     --h2: #000;
 }
 
-/* Define variables CSS para colores del tema Oscuro (para calendar.html) */
 body.theme-dark {
     --h2: #fff;
     --body-bg: #343a40;
@@ -64,13 +62,9 @@ h2 {
     background-color: var(--navbar-bg) !important;
     color: var(--navbar-text);
     position: relative;
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-wrap: wrap;
     flex-wrap: wrap;
-    -ms-flex-align: center;
     align-items: center;
-    -ms-flex-pack: justify;
     justify-content: space-between;
     padding: .0rem 1rem;
 }
@@ -133,7 +127,6 @@ h2 {
     background-color: black;
 }
 
-/* Estilos específicos para calendar.html */
 #calendar {
     max-width: 900px;
     margin: 40px auto;
@@ -172,7 +165,7 @@ body.theme-dark .fc .fc-toolbar-title {
 }
 
 body.theme-dark .fc .fc-button {
-    background-color: var(--table-header-bg); /* Asumiendo que table-header-bg es adecuado para botones FC */
+    background-color: var(--table-header-bg);
     border-color: var(--table-header-bg);
     color: var(--table-header-text);
 }
@@ -214,7 +207,6 @@ body.theme-dark .fc-col-header-cell {
     border-color: var(--fc-button-active-border-color, #151e27);
 }
 
-/* Modales para el calendario */
 .modal-content {
     background-color: var(--card-bg);
     color: var(--card-text);
@@ -239,7 +231,6 @@ body.theme-dark .fc-col-header-cell {
     color: black;
 }
 
-/* Estilos de formulario dentro de los modales del calendario */
 .form-group {
     margin-bottom: 1rem;
 }
