@@ -1,14 +1,15 @@
 package com.freedom.tareas.Controller;
 
-import com.freedom.tareas.Model.User;
-import com.freedom.tareas.Service.UserService;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import com.freedom.tareas.Model.User;
+import com.freedom.tareas.Service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,18 +22,21 @@ public class AuthController {
         this.userService = userService;
     }
 
+    // === INICIO DE SESIÓN ===
     @GetMapping("/login")
-    public String loginPage(Model model, HttpServletRequest request) {
+    public String mostrarPaginaLogin(Model model, HttpServletRequest request) {
         model.addAttribute("currentUri", request.getRequestURI());
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() &&
                 !(authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
+            // Usuario ya autenticado, redirigir a inicio
             return "redirect:/";
         }
         return "login";
     }
 
+    // === REGISTRO ===
     @GetMapping("/register")
     public String mostrarFormularioRegistro(Model model) {
         model.addAttribute("usuario", new User());
@@ -47,7 +51,6 @@ public class AuthController {
             model.addAttribute("error", "El nombre de usuario o correo ya están registrados.");
             return "register";
         }
-
         return "redirect:/login";
     }
 }
