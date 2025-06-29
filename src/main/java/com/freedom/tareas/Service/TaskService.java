@@ -26,198 +26,191 @@ public class TaskService {
     }
 
     @Transactional
-    public Task createTask(@Valid Task task) {
-        if (task.getUser() == null) {
+    public Task crearTarea(@Valid Task tarea) {
+        if (tarea.getUser() == null) {
             throw new IllegalArgumentException("La tarea debe estar asociada a un usuario.");
         }
-        if ("Completada".equalsIgnoreCase(task.getStatus()) && task.getCompletionDate() == null) {
-            task.setCompletionDate(LocalDate.now());
+        if ("Completada".equalsIgnoreCase(tarea.getStatus()) && tarea.getCompletionDate() == null) {
+            tarea.setCompletionDate(LocalDate.now());
         }
-        if (task.getActiveOnPage() == null || task.getActiveOnPage().isEmpty()) {
-            task.setActiveOnPage("on");
+        if (tarea.getActiveOnPage() == null || tarea.getActiveOnPage().isEmpty()) {
+            tarea.setActiveOnPage("on");
         }
-        return taskRepository.save(task);
+        return taskRepository.save(tarea);
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> obtenerTareasPorUsuario(User usuario) {
+        return taskRepository.findByUserAndActiveOnPage(usuario, "on");
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getTasksByUser(User user) {
-        return taskRepository.findByUserAndActiveOnPage(user, "on");
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Task> getTaskByIdAndUser(Long id, User user) {
-        return taskRepository.findByIdAndUser(id, user)
+    public Optional<Task> obtenerTareaPorIdYUsuario(Long id, User usuario) {
+        return taskRepository.findByIdAndUser(id, usuario)
                 .filter(t -> "on".equalsIgnoreCase(t.getActiveOnPage()));
     }
 
     @Transactional
-    public Task updateTaskForUser(Long id, @Valid Task updatedTask, User user) {
-        Optional<Task> existingTaskOptional = taskRepository.findByIdAndUser(id, user);
+    public Task actualizarTareaPorUsuario(Long id, @Valid Task tareaActualizada, User usuario) {
+        Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
 
-        if (existingTaskOptional.isPresent()) {
-            Task existingTask = existingTaskOptional.get();
+        if (tareaEncontrada.isPresent()) {
+            Task tarea = tareaEncontrada.get();
+            String estadoAnterior = tarea.getStatus();
 
-            String oldStatus = existingTask.getStatus();
+            tarea.setTitle(tareaActualizada.getTitle());
+            tarea.setDescription(tareaActualizada.getDescription());
+            tarea.setDueDate(tareaActualizada.getDueDate());
+            tarea.setPriority(tareaActualizada.getPriority());
+            tarea.setStatus(tareaActualizada.getStatus());
+            tarea.setEtiqueta(tareaActualizada.getEtiqueta());
 
-            existingTask.setTitle(updatedTask.getTitle());
-            existingTask.setDescription(updatedTask.getDescription());
-            existingTask.setDueDate(updatedTask.getDueDate());
-            existingTask.setPriority(updatedTask.getPriority());
-            existingTask.setStatus(updatedTask.getStatus());
-            existingTask.setEtiqueta(updatedTask.getEtiqueta());
-
-            if ("Completada".equalsIgnoreCase(updatedTask.getStatus()) && !"Completada".equalsIgnoreCase(oldStatus)) {
-                existingTask.setCompletionDate(LocalDate.now());
-            } else if (!"Completada".equalsIgnoreCase(updatedTask.getStatus())
-                    && "Completada".equalsIgnoreCase(oldStatus)) {
-                existingTask.setCompletionDate(null);
+            if ("Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && !"Completada".equalsIgnoreCase(estadoAnterior)) {
+                tarea.setCompletionDate(LocalDate.now());
+            } else if (!"Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && "Completada".equalsIgnoreCase(estadoAnterior)) {
+                tarea.setCompletionDate(null);
             }
 
-            return taskRepository.save(existingTask);
+            return taskRepository.save(tarea);
         } else {
             throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
         }
     }
 
     @Transactional
-    public void deleteTaskForUser(Long id, User user) {
-        Optional<Task> taskToSoftDelete = taskRepository.findByIdAndUser(id, user);
-        if (taskToSoftDelete.isEmpty()) {
+    public void eliminarTareaPorUsuario(Long id, User usuario) {
+        Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
+        if (tareaEncontrada.isEmpty()) {
             throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
         }
-        Task task = taskToSoftDelete.get();
-        task.setActiveOnPage("off");
-        taskRepository.save(task);
+        Task tarea = tareaEncontrada.get();
+        tarea.setActiveOnPage("off");
+        taskRepository.save(tarea);
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getFilteredAndSortedTasksByUser(User user, String search, String statusFilter, String priorityFilter,
-                                                      String etiquetaFilter, String sortBy, String sortDir) {
-        List<Task> userTasks = taskRepository.findByUserAndActiveOnPage(user, "on");
+    public List<Task> obtenerTareasFiltradasYOrdenadasPorUsuario(User usuario, String busqueda, String filtroEstado,
+                                                                 String filtroPrioridad, String filtroEtiqueta,
+                                                                 String ordenarPor, String direccionOrden) {
+        List<Task> tareasDelUsuario = taskRepository.findByUserAndActiveOnPage(usuario, "on");
 
-        Comparator<Task> comparator;
-        if ("id".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparing(Task::getId);
-        } else if ("title".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparing(Task::getTitle, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-        } else if ("dueDate".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparing(Task::getDueDate, Comparator.nullsLast(LocalDate::compareTo));
-        } else if ("priority".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparing((Task task) -> {
-                if (task.getPriority() == null) return 3;
-                return switch (task.getPriority().toUpperCase()) {
+        Comparator<Task> comparador;
+        if ("id".equalsIgnoreCase(ordenarPor)) {
+            comparador = Comparator.comparing(Task::getId);
+        } else if ("title".equalsIgnoreCase(ordenarPor)) {
+            comparador = Comparator.comparing(Task::getTitle, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+        } else if ("dueDate".equalsIgnoreCase(ordenarPor)) {
+            comparador = Comparator.comparing(Task::getDueDate, Comparator.nullsLast(LocalDate::compareTo));
+        } else if ("priority".equalsIgnoreCase(ordenarPor)) {
+            comparador = Comparator.comparing((Task tarea) -> {
+                if (tarea.getPriority() == null) return 3;
+                return switch (tarea.getPriority().toUpperCase()) {
                     case "ALTA" -> 1;
                     case "MEDIA" -> 2;
                     case "BAJA" -> 3;
                     default -> 4;
                 };
             });
-        } else if ("status".equalsIgnoreCase(sortBy)) {
-            comparator = Comparator.comparing(Task::getStatus, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+        } else if ("status".equalsIgnoreCase(ordenarPor)) {
+            comparador = Comparator.comparing(Task::getStatus, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
         } else {
-            comparator = Comparator.comparing(Task::getId);
+            comparador = Comparator.comparing(Task::getId);
         }
 
-        if ("desc".equalsIgnoreCase(sortDir)) {
-            comparator = comparator.reversed();
+        if ("desc".equalsIgnoreCase(direccionOrden)) {
+            comparador = comparador.reversed();
         }
 
-        return userTasks.stream()
-                .filter(task -> {
-                    boolean matches = true;
-
-                    if (search != null && !search.isEmpty()) {
-                        matches = matches && task.getTitle().toLowerCase().contains(search.toLowerCase());
+        return tareasDelUsuario.stream()
+                .filter(tarea -> {
+                    boolean coincide = true;
+                    if (busqueda != null && !busqueda.isEmpty()) {
+                        coincide = coincide && tarea.getTitle().toLowerCase().contains(busqueda.toLowerCase());
                     }
-                    if (statusFilter != null && !statusFilter.isEmpty()) {
-                        matches = matches && statusFilter.equalsIgnoreCase(task.getStatus());
+                    if (filtroEstado != null && !filtroEstado.isEmpty()) {
+                        coincide = coincide && filtroEstado.equalsIgnoreCase(tarea.getStatus());
                     }
-                    if (priorityFilter != null && !priorityFilter.isEmpty()) {
-                        matches = matches && priorityFilter.equalsIgnoreCase(task.getPriority());
+                    if (filtroPrioridad != null && !filtroPrioridad.isEmpty()) {
+                        coincide = coincide && filtroPrioridad.equalsIgnoreCase(tarea.getPriority());
                     }
-                    if (etiquetaFilter != null && !etiquetaFilter.isEmpty()) {
-                        matches = matches && (task.getEtiqueta() != null
-                                && task.getEtiqueta().toLowerCase().contains(etiquetaFilter.toLowerCase()));
+                    if (filtroEtiqueta != null && !filtroEtiqueta.isEmpty()) {
+                        coincide = coincide && (tarea.getEtiqueta() != null &&
+                                tarea.getEtiqueta().toLowerCase().contains(filtroEtiqueta.toLowerCase()));
                     }
-                    return matches;
+                    return coincide;
                 })
-                .sorted(comparator)
+                .sorted(comparador)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getDueSoonTasksByUser(User user, LocalDate today, LocalDate twoDaysFromNow) {
-        return taskRepository.findByUserAndActiveOnPage(user, "on").stream()
-                .filter(task -> !"Completada".equalsIgnoreCase(task.getStatus()))
-                .filter(task -> task.getDueDate() != null &&
-                        task.getDueDate().isAfter(today.minusDays(1)) &&
-                        task.getDueDate().isBefore(twoDaysFromNow.plusDays(1)))
+    public List<Task> obtenerTareasProximasPorUsuario(User usuario, LocalDate hoy, LocalDate dentroDeDosDias) {
+        return taskRepository.findByUserAndActiveOnPage(usuario, "on").stream()
+                .filter(tarea -> !"Completada".equalsIgnoreCase(tarea.getStatus()))
+                .filter(tarea -> tarea.getDueDate() != null &&
+                        tarea.getDueDate().isAfter(hoy.minusDays(1)) &&
+                        tarea.getDueDate().isBefore(dentroDeDosDias.plusDays(1)))
                 .sorted(Comparator.comparing(Task::getDueDate))
                 .collect(Collectors.toList());
     }
 
-    public List<Task> findAllTasks() {
+    public List<Task> buscarTodasLasTareas() {
         return taskRepository.findAll();
     }
 
-    public Optional<Task> findTaskById(Long id) {
+    public Optional<Task> buscarTareaPorId(Long id) {
         return taskRepository.findById(id);
     }
 
-    public Task saveTask(Task task) {
-        return taskRepository.save(task);
+    public Task guardarTarea(Task tarea) {
+        return taskRepository.save(tarea);
     }
 
-    public void deleteTask(Long id) {
+    public void eliminarTarea(Long id) {
         taskRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
-    public List<Task> findTasksByUserId(Long userId) {
-        return taskRepository.findByUser_IdAndActiveOnPage(userId, "on");
+    public List<Task> buscarTareasPorIdUsuario(Long idUsuario) {
+        return taskRepository.findByUser_IdAndActiveOnPage(idUsuario, "on");
     }
 
     @Transactional(readOnly = true)
-    public Optional<Task> findTaskByUserIdAndTaskId(Long userId, Long taskId) {
-        return taskRepository.findByIdAndUser_Id(taskId, userId);
+    public Optional<Task> buscarTareaPorIdUsuarioYIdTarea(Long idUsuario, Long idTarea) {
+        return taskRepository.findByIdAndUser_Id(idTarea, idUsuario);
     }
 
     @Transactional
-    public Task updateTask(Long userId, Long taskId, @Valid Task updatedTask) {
-        Optional<Task> existingTaskOptional = taskRepository.findByIdAndUser_Id(taskId, userId);
+    public Task actualizarTarea(Long idUsuario, Long idTarea, @Valid Task tareaActualizada) {
+        Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser_Id(idTarea, idUsuario);
 
-        if (existingTaskOptional.isPresent()) {
-            Task existingTask = existingTaskOptional.get();
+        if (tareaEncontrada.isPresent()) {
+            Task tarea = tareaEncontrada.get();
 
-            existingTask.setTitle(updatedTask.getTitle());
-            existingTask.setDescription(updatedTask.getDescription());
-            existingTask.setDueDate(updatedTask.getDueDate());
-            existingTask.setPriority(updatedTask.getPriority());
-            existingTask.setStatus(updatedTask.getStatus());
-            existingTask.setEtiqueta(updatedTask.getEtiqueta());
+            tarea.setTitle(tareaActualizada.getTitle());
+            tarea.setDescription(tareaActualizada.getDescription());
+            tarea.setDueDate(tareaActualizada.getDueDate());
+            tarea.setPriority(tareaActualizada.getPriority());
+            tarea.setStatus(tareaActualizada.getStatus());
+            tarea.setEtiqueta(tareaActualizada.getEtiqueta());
 
-            if ("Completada".equalsIgnoreCase(updatedTask.getStatus()) && !"Completada".equalsIgnoreCase(existingTask.getStatus())) {
-                existingTask.setCompletionDate(LocalDate.now());
-            } else if (!"Completada".equalsIgnoreCase(updatedTask.getStatus()) && "Completada".equalsIgnoreCase(existingTask.getStatus())) {
-                existingTask.setCompletionDate(null);
+            if ("Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && !"Completada".equalsIgnoreCase(tarea.getStatus())) {
+                tarea.setCompletionDate(LocalDate.now());
+            } else if (!"Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && "Completada".equalsIgnoreCase(tarea.getStatus())) {
+                tarea.setCompletionDate(null);
             }
 
-            return taskRepository.save(existingTask);
+            return taskRepository.save(tarea);
         } else {
-            throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + userId + " y Tarea ID: " + taskId);
+            throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + idUsuario + " y Tarea ID: " + idTarea);
         }
     }
 
     @Transactional
-    public boolean deleteTask(Long userId, Long taskId) {
-        Optional<Task> taskToDeleteOptional = taskRepository.findByIdAndUser_Id(taskId, userId);
-        if (taskToDeleteOptional.isPresent()) {
-            taskRepository.delete(taskToDeleteOptional.get());
+    public boolean eliminarTarea(Long idUsuario, Long idTarea) {
+        Optional<Task> tareaAEliminar = taskRepository.findByIdAndUser_Id(idTarea, idUsuario);
+        if (tareaAEliminar.isPresent()) {
+            taskRepository.delete(tareaAEliminar.get());
             return true;
         }
         return false;

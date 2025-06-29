@@ -5,8 +5,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class ProfileController {
+
+    // Mostrar la página de perfil del usuario autenticado
     @GetMapping("/profile")
-    public String showProfilePage() {
+    public String mostrarPaginaPerfil() {
         return "profile";
     }
 }
