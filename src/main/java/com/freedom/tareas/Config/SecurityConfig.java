@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/login/**", "/register/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/api/**", "/profile/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().denyAll()
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

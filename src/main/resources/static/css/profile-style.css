@@ -1,0 +1,124 @@
+body.theme-light {
+    --body-bg: #ffffff;
+    --main-content-bg: #ffffff;
+    --text-color: #212529;
+    --heading-color: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #fff;
+    --card-text: #212529;
+    --border-color: #000000;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --h2: #000;
+    --rotating-tip-bg: #406a42;
+    --rotating-tip-text: #ffffff;
+    --tasks-due-soon-item-bg: #f8f9fa;
+    --tasks-due-soon-item-text: #333;
+    --tasks-due-soon-duedate-text: #555;
+}
+
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --main-content-bg: #343a40;
+    --text-color: #000000;
+    --heading-color: #ffffff;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #b1da9d;
+    --card-text: #000000;
+    --border-color: #5a6268;
+    --footer-bg: #212529;
+    --footer-text: #ced4da;
+    --rotating-tip-bg: #218838;
+    --rotating-tip-text: #ffffff;
+    --tasks-due-soon-item-bg: #ced4da;
+    --tasks-due-soon-item-text: #212529;
+    --tasks-due-soon-duedate-text: #555;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+h1, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
+h2 {
+    color: var(--h2);
+}
+
+.main-content {
+    flex: 1;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--main-content-bg);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+.perfil-img {
+    max-width: 200px; 
+    max-height: 200px; 
+    width: auto;
+    height: auto; 
+    border-radius: 5%;
+    object-fit: cover;
+    display: block; 
+    margin: 0 auto 15px auto; 
+}

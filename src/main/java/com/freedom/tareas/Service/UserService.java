@@ -4,15 +4,16 @@ import com.freedom.tareas.Model.Role;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Repository.TaskRepository;
 import com.freedom.tareas.Repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.transaction.Transactional;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.User.UserBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -119,6 +120,38 @@ public class UserService implements UserDetailsService {
         user.setRole(Role.ADMIN);
         userRepository.save(user);
     }
+
+     // Métodos nuevos para obtener y actualizar el usuario logeado
+    @Transactional(readOnly = true)
+    public User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null; 
+        }
+        String username = authentication.getName();  
+         return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+    }
+
+    @Transactional
+    public User updateProfile(User userDetails, String newPassword) {
+        User existingUser = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + userDetails.getId()));
+
+        // Actualiza solo los campos que el usuario puede editar
+        existingUser.setEmail(userDetails.getEmail());
+        existingUser.setImageUrl(userDetails.getImageUrl());
+        existingUser.setAge(userDetails.getAge());
+        existingUser.setBirthDate(userDetails.getBirthDate());
+        existingUser.setCountry(userDetails.getCountry());
+
+        if (newPassword != null && !newPassword.isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(newPassword));
+        }
+
+        return userRepository.save(existingUser);
+    }
+    // ---------------------------------------------------------------------
 
     public static class UserNotFoundException extends RuntimeException {
         public UserNotFoundException(String message) {

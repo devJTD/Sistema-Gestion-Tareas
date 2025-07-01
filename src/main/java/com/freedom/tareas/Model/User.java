@@ -1,5 +1,7 @@
 package com.freedom.tareas.Model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,6 +49,18 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private Role role;
+    // nuevbos campos
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
+
+    @Column(name = "age")
+    private Integer age;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "country", length = 100)
+    private String country;
 
     public User(String username, String password, String email, Role role) {
         this.username = username;
