@@ -50,7 +50,7 @@ public class User {
     @Column(name = "role", nullable = false, length = 20)
     private Role role;
     // nuevbos campos
-    @Column(name = "image_url", length = 255)
+    @Column(name = "image_url", length = 10000)
     private String imageUrl;
 
     @Column(name = "age")

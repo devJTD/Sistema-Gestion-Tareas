@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,9 +27,6 @@ import com.freedom.tareas.Model.Task;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Service.TaskService;
 import com.freedom.tareas.Service.UserService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -63,12 +63,12 @@ public class TaskController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        User currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElse(null);
-
+        model.addAttribute("user", currentUser);
         List<Task> allTasks = new ArrayList<>();
         if (currentUser != null) {
-            allTasks = taskService.getTasksByUser(currentUser);
+            allTasks = taskService.obtenerTareasPorUsuario(currentUser);
         }
 
         model.addAttribute("totalTasksCount", allTasks.size());
@@ -81,7 +81,7 @@ public class TaskController {
         LocalDate today = LocalDate.now();
         LocalDate twoDaysFromNow = today.plusDays(2);
 
-        List<Task> tasksDueSoon = taskService.getDueSoonTasksByUser(currentUser, today, twoDaysFromNow);
+        List<Task> tasksDueSoon = taskService.obtenerTareasProximasPorUsuario(currentUser, today, twoDaysFromNow);
 
         model.addAttribute("tasksDueSoon", tasksDueSoon);
 
@@ -111,12 +111,14 @@ public class TaskController {
             @RequestParam(value = "sortDir", required = false, defaultValue = "asc") String sortDir) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        User currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        model.addAttribute("user", currentUser);
 
         List<Task> filteredTasks;
 
-        filteredTasks = taskService.getFilteredAndSortedTasksByUser(currentUser, search, statusFilter, priorityFilter,
+        filteredTasks = taskService.obtenerTareasFiltradasYOrdenadasPorUsuario(currentUser, search, statusFilter,
+                priorityFilter,
                 etiquetaFilter, sortBy, sortDir);
 
         model.addAttribute("tasks", filteredTasks);
@@ -134,6 +136,12 @@ public class TaskController {
     @GetMapping("/calendar")
     public String calendarPage(Model model, HttpServletRequest request) {
         model.addAttribute("currentUri", request.getRequestURI());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User currentUser = userService.buscarEntidadPorUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        model.addAttribute("user", currentUser);
+
         return "calendar";
     }
 
@@ -142,10 +150,10 @@ public class TaskController {
     public List<Map<String, Object>> getTasksForCalendar() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        User currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        List<Task> allTasks = taskService.getTasksByUser(currentUser);
+        List<Task> allTasks = taskService.obtenerTareasPorUsuario(currentUser);
 
         return allTasks.stream()
                 .filter(task -> task.getDueDate() != null)
@@ -181,10 +189,16 @@ public class TaskController {
     public String showAddTaskForm(Model model, HttpServletRequest request) {
         model.addAttribute("taskFormObject", new Task());
         model.addAttribute("currentUri", request.getRequestURI());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User currentUser = userService.buscarEntidadPorUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        model.addAttribute("user", currentUser);
         return "add-task";
     }
 
     @PostMapping("/tasks/save")
+    @SuppressWarnings("CallToPrintStackTrace")
     public String saveTask(@Valid @ModelAttribute("taskFormObject") Task task,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
@@ -200,7 +214,7 @@ public class TaskController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
 
-            User currentUser = userService.findByUsernameEntity(username)
+            User currentUser = userService.buscarEntidadPorUsername(username)
                     .orElseThrow(() -> new RuntimeException(
                             "Usuario autenticado no encontrado en la base de datos: " + username));
 
@@ -210,7 +224,7 @@ public class TaskController {
                 task.setActiveOnPage("on");
             }
 
-            taskService.createTask(task);
+            taskService.crearTarea(task);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tarea agregada exitosamente!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,11 +240,11 @@ public class TaskController {
     public String deleteTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        User currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         try {
-            taskService.deleteTaskForUser(id, currentUser);
+            taskService.eliminarTareaPorUsuario(id, currentUser);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tarea eliminada exitosamente!");
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar: " + e.getMessage());
@@ -253,11 +267,11 @@ public class TaskController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        User currentUser = userService.findByUsernameEntity(username)
+        User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         try {
-            taskService.updateTaskForUser(task.getId(), task, currentUser);
+            taskService.actualizarTareaPorUsuario(task.getId(), task, currentUser);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tarea actualizada exitosamente!");
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

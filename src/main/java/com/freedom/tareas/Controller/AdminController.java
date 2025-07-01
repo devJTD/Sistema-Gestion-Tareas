@@ -1,10 +1,7 @@
 package com.freedom.tareas.Controller;
 
-import com.freedom.tareas.Model.Task;
-import com.freedom.tareas.Model.User;
-import com.freedom.tareas.Service.TaskService;
-import com.freedom.tareas.Service.UserService;
-import com.freedom.tareas.Service.UserService.UserNotFoundException;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.List;
-import java.util.Optional;
+import com.freedom.tareas.Model.Task;
+import com.freedom.tareas.Model.User;
+import com.freedom.tareas.Service.TaskService;
+import com.freedom.tareas.Service.UserService;
+import com.freedom.tareas.Service.UserService.UserNotFoundException;
 
 @Controller
 @RequestMapping("/admin")
@@ -35,71 +35,34 @@ public class AdminController {
         this.taskService = taskService;
     }
 
+    // === PANEL PRINCIPAL ===
     @GetMapping
-    public String adminPanel(Model model) {
+    public String mostrarPanelAdmin(Model model) {
         return "admin";
     }
 
+    // === GESTIÓN DE USUARIOS ===
+
     @GetMapping("/api/users")
     @ResponseBody
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.findAllUsers();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<User>> listarTodosLosUsuarios() {
+        List<User> usuarios = userService.buscarTodosLosUsuarios();
+        return ResponseEntity.ok(usuarios);
     }
 
-    @GetMapping("/api/users/{userId}")
+    @GetMapping("/api/users/{idUsuario}")
     @ResponseBody
-    public ResponseEntity<User> getUserDetails(@PathVariable Long userId) {
-        Optional<User> userOptional = userService.findUserById(userId);
-        return userOptional.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<User> obtenerUsuarioPorId(@PathVariable Long idUsuario) {
+        Optional<User> usuario = userService.buscarUsuarioPorId(idUsuario);
+        return usuario.map(ResponseEntity::ok)
+                      .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/api/users/{userId}/tasks")
+    @DeleteMapping("/api/users/{idUsuario}")
     @ResponseBody
-    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId) {
-        List<Task> tasks = taskService.findTasksByUserId(userId);
-        return ResponseEntity.ok(tasks);
-    }
-
-    @GetMapping("/api/users/{userId}/tasks/{taskId}")
-    @ResponseBody
-    public ResponseEntity<Task> getTaskById(@PathVariable Long userId, @PathVariable Long taskId) {
-        Optional<Task> taskOptional = taskService.findTaskByUserIdAndTaskId(userId, taskId);
-        return taskOptional.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/api/users/{userId}/tasks/{taskId}")
-    @ResponseBody
-    public ResponseEntity<Task> updateTask(@PathVariable Long userId, @PathVariable Long taskId,
-            @RequestBody Task updatedTask) {
+    public ResponseEntity<Void> eliminarUsuarioPorId(@PathVariable Long idUsuario) {
         try {
-            Task result = taskService.updateTask(userId, taskId, updatedTask);
-            return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @DeleteMapping("/api/users/{userId}/tasks/{taskId}")
-    @ResponseBody
-    public ResponseEntity<Void> deleteTask(@PathVariable Long userId, @PathVariable Long taskId) {
-        boolean deleted = taskService.deleteTask(userId, taskId);
-        if (deleted) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/api/users/{userId}")
-    @ResponseBody
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        try {
-            userService.deleteUserAndAssociatedTasks(userId);
+            userService.eliminarUsuarioYSusTareas(idUsuario);
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -109,19 +72,63 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/api/users/{userId}/assign-admin")
+    @PutMapping("/api/users/{idUsuario}/asignar-admin")
     @ResponseBody
-    public ResponseEntity<?> assignAdminRole(@PathVariable Long userId) {
+    public ResponseEntity<?> asignarRolAdministrador(@PathVariable Long idUsuario) {
         try {
-            userService.assignAdminRole(userId);
+            userService.asignarRolAdmin(idUsuario);
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error al asignar rol de administrador al usuario " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al asignar rol de administrador: " + e.getMessage());
+            System.err.println("Error al asignar rol de administrador al usuario " + idUsuario + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Error al asignar rol de administrador: " + e.getMessage());
+        }
+    }
+
+    // === GESTIÓN DE TAREAS POR USUARIO ===
+
+    @GetMapping("/api/users/{idUsuario}/tasks")
+    @ResponseBody
+    public ResponseEntity<List<Task>> listarTareasPorUsuario(@PathVariable Long idUsuario) {
+        List<Task> tareas = taskService.buscarTareasPorIdUsuario(idUsuario);
+        return ResponseEntity.ok(tareas);
+    }
+
+    @GetMapping("/api/users/{idUsuario}/tasks/{idTarea}")
+    @ResponseBody
+    public ResponseEntity<Task> obtenerTareaPorIdYUsuario(@PathVariable Long idUsuario, @PathVariable Long idTarea) {
+        Optional<Task> tarea = taskService.buscarTareaPorIdUsuarioYIdTarea(idUsuario, idTarea);
+        return tarea.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/api/users/{idUsuario}/tasks/{idTarea}")
+    @ResponseBody
+    public ResponseEntity<Task> actualizarTareaPorUsuario(@PathVariable Long idUsuario,
+                                                          @PathVariable Long idTarea,
+                                                          @RequestBody Task tareaActualizada) {
+        try {
+            Task tarea = taskService.actualizarTarea(idUsuario, idTarea, tareaActualizada);
+            return ResponseEntity.ok(tarea);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/api/users/{idUsuario}/tasks/{idTarea}")
+    @ResponseBody
+    public ResponseEntity<Void> eliminarTareaPorUsuario(@PathVariable Long idUsuario, @PathVariable Long idTarea) {
+        boolean eliminado = taskService.eliminarTarea(idUsuario, idTarea);
+        if (eliminado) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

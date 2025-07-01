@@ -1,25 +1,27 @@
 package com.freedom.tareas.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User.UserBuilder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.freedom.tareas.Model.Role;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Repository.TaskRepository;
 import com.freedom.tareas.Repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.core.userdetails.User.UserBuilder;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -28,13 +30,13 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final TaskRepository taskRepository;
 
-
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TaskRepository taskRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.taskRepository = taskRepository;
     }
 
+    // crearUsuario
     public boolean crearUsuario(User usuario) {
         if (userRepository.existsByUsername(usuario.getUsername()) || userRepository.existsByEmail(usuario.getEmail())) {
             return false;
@@ -46,6 +48,29 @@ public class UserService implements UserDetailsService {
         return true;
     }
 
+    // guardarUsuario
+    public User guardarUsuario(User user) {
+        return userRepository.save(user);
+    }
+
+    // eliminarUsuario
+    public void eliminarUsuario(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    // eliminarUsuarioYSusTareas
+    @Transactional
+    public void eliminarUsuarioYSusTareas(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            taskRepository.deleteByUserId(userId);
+            userRepository.deleteById(userId);
+        } else {
+            throw new UserNotFoundException("Usuario con ID " + userId + " no encontrado para eliminación.");
+        }
+    }
+
+    // loadUserByUsername
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User usuario = userRepository
@@ -64,47 +89,12 @@ public class UserService implements UserDetailsService {
         builder.password(usuario.getPassword());
         builder.authorities(authorities);
 
-
         return builder.build();
     }
 
-    public Optional<User> findByUsernameEntity(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
-
-    public Optional<User> findUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    public Optional<User> findUserByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public List<User> findAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
-
+    // asignarRolAdmin
     @Transactional
-    public void deleteUserAndAssociatedTasks(Long userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            taskRepository.deleteByUserId(userId);
-            userRepository.deleteById(userId);
-        } else {
-            throw new UserNotFoundException("Usuario con ID " + userId + " no encontrado para eliminación.");
-        }
-    }
-
-    @Transactional
-    public void assignAdminRole(Long userId) {
+    public void asignarRolAdmin(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
@@ -152,6 +142,26 @@ public class UserService implements UserDetailsService {
         return userRepository.save(existingUser);
     }
     // ---------------------------------------------------------------------
+
+    // buscarUsuarioPorId
+    public Optional<User> buscarUsuarioPorId(Long id) {
+        return userRepository.findById(id);
+    }
+
+    // buscarUsuarioPorUsername
+    public Optional<User> buscarUsuarioPorUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    // buscarEntidadPorUsername
+    public Optional<User> buscarEntidadPorUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    // buscarTodosLosUsuarios
+    public List<User> buscarTodosLosUsuarios() {
+        return userRepository.findAll();
+    }
 
     public static class UserNotFoundException extends RuntimeException {
         public UserNotFoundException(String message) {

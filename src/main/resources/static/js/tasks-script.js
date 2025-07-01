@@ -122,3 +122,13 @@ $(document).ready(function () {
     var allTipsFromThymeleaf = /*[[${allTips}]]*/ [];
     initializeTipRotation(allTipsFromThymeleaf, "#rotating-tip", 10000);
 });
+
+function actualizarImagen() {
+        const url = document.getElementById("imagenUrl").value;
+        const img = document.getElementById("imagenPerfil");
+        if (url) {
+          img.src = url;
+        } else {
+          img.src = "[[@{/images/perfilVacio.jpg}]]"; 
+        }
+      }

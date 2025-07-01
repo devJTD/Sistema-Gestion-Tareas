@@ -60,8 +60,12 @@
         <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
           <a class="nav-link dropdown-toggle" href="#" id="userDropdownMenuLink" role="button" data-toggle="dropdown"
             aria-haspopup="true" aria-expanded="false">
-            <img id="profile-image" th:src="@{/images/perfilVacio.jpg}" alt="Foto de perfil"
-              class="rounded-circle profile-img mr-1" />
+            <img
+                 id="profile-image"
+                   th:src="${user.imageUrl != null and user.imageUrl.length() > 0 ? user.imageUrl : '/images/perfilVacio.jpg'}"
+                    alt="Foto de perfil"
+                     class="rounded-circle profile-img mr-1"
+/>
             <span th:text="${#authentication.principal.username}">Usuario</span>
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdownMenuLink">
