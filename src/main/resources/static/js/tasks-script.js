@@ -1,3 +1,5 @@
+// Sección de Preparación de Modales de Tareas
+// Prepara el modal de edición de tareas con los datos proporcionados.
 function prepareEditTaskFormModal(
     id,
     title,
@@ -17,12 +19,15 @@ function prepareEditTaskFormModal(
     $("#editTaskEtiqueta").val(etiqueta);
 }
 
+// Prepara el modal de eliminación de tareas con el ID y título de la tarea.
 function prepareDeleteTaskModal(taskId, taskTitle) {
     $("#taskTitleToDeleteModal").text(taskTitle);
     var deleteUrl = "/tasks/delete/";
     $("#deleteTaskFormInModal").attr("action", deleteUrl + taskId);
 }
 
+// Sección de Rotación de Consejos
+// Inicializa la rotación de consejos en un elemento HTML dado un array de consejos y un intervalo.
 function initializeTipRotation(tipsArray, elementSelector, intervalTime) {
     $(document).ready(function () {
         var tips = tipsArray;
@@ -56,7 +61,10 @@ function initializeTipRotation(tipsArray, elementSelector, intervalTime) {
     });
 }
 
+// Sección de Inicialización de Documento
+// Ejecuta el código una vez que el DOM está completamente cargado.
 $(document).ready(function () {
+    // Maneja el clic en los botones de eliminación de tareas para abrir el modal.
     if ($("#deleteTaskModal").length) {
         $(".delete-task-btn").on("click", function () {
             var taskId = $(this).data("task-id");
@@ -65,6 +73,7 @@ $(document).ready(function () {
         });
     }
 
+    // Maneja el clic en los botones de edición de tareas para abrir el modal.
     if ($("#editTaskModal").length) {
         $(".edit-task-btn").on("click", function () {
             var taskId = $(this).data("task-id");
@@ -87,6 +96,7 @@ $(document).ready(function () {
         });
     }
 
+    // Maneja el evento de mostrar el modal de edición de tareas.
     $("#editTaskModal").on("show.bs.modal", function (event) {
         var button = $(event.relatedTarget);
         var taskId = button.data("task-id");
@@ -107,6 +117,7 @@ $(document).ready(function () {
         modal.find("#editTaskEtiqueta").val(taskEtiqueta);
     });
 
+    // Maneja el evento de mostrar el modal de eliminación de tareas.
     $("#deleteTaskModal").on("show.bs.modal", function (event) {
         var button = $(event.relatedTarget);
         var taskId = button.data("task-id");
@@ -119,16 +130,19 @@ $(document).ready(function () {
             .attr("action", "/tasks/delete/" + taskId);
     });
 
+    // Obtiene los consejos de Thymeleaf y los usa para inicializar la rotación.
     var allTipsFromThymeleaf = /*[[${allTips}]]*/ [];
     initializeTipRotation(allTipsFromThymeleaf, "#rotating-tip", 10000);
 });
 
+// Sección de Actualización de Imagen de Perfil
+// Actualiza la imagen de perfil del usuario basándose en una URL proporcionada.
 function actualizarImagen() {
-        const url = document.getElementById("imagenUrl").value;
-        const img = document.getElementById("imagenPerfil");
-        if (url) {
-          img.src = url;
-        } else {
-          img.src = "[[@{/images/perfilVacio.jpg}]]"; 
-        }
-      }
+    const url = document.getElementById("imagenUrl").value;
+    const img = document.getElementById("imagenPerfil");
+    if (url) {
+        img.src = url;
+    } else {
+        img.src = "[[@{/images/perfilVacio.jpg}]]";
+    }
+}

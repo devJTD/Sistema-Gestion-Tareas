@@ -18,14 +18,22 @@
             <i class="fas fa-user-circle"></i>
             <h2>Iniciar Sesión</h2>
         </div>
-        <div th:if="${param.error}" class="alert alert-danger" role="alert">
+        <!-- Mensajes de error/éxito (Thymeleaf para mensajes del servidor) -->
+        <div th:if="${param.error}" class="alert alert-danger" role="alert" id="serverErrorAlert">
             <i class="fas fa-exclamation-triangle"></i> Nombre de usuario o contraseña incorrectos.
         </div>
         <div th:if="${param.logout}" class="alert alert-success" role="alert">
             <i class="fas fa-check-circle"></i> Has cerrado sesión exitosamente.
         </div>
+        <!-- Mensajes de error de JavaScript (para errores de AJAX) -->
+        <div id="jsErrorAlert" class="alert alert-danger" role="alert" style="display:none;">
+            <i class="fas fa-exclamation-triangle"></i> <span id="jsErrorMessage"></span>
+        </div>
+        <div id="jsSuccessAlert" class="alert alert-success" role="alert" style="display:none;">
+            <i class="fas fa-check-circle"></i> <span id="jsSuccessMessage"></span>
+        </div>
 
-        <form id="loginForm" th:action="@{/login}" method="post">
+        <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label for="username"><i class="fas fa-user"></i> Nombre de Usuario</label>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Ingrese su usuario"
@@ -46,8 +54,82 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> <!-- Usamos la versión completa de jQuery -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Función para mostrar alertas de JS
+        function showAlert(type, message) {
+            const errorAlert = $('#jsErrorAlert');
+            const successAlert = $('#jsSuccessAlert');
+            const errorMessageSpan = $('#jsErrorMessage');
+            const successMessageSpan = $('#jsSuccessMessage');
+
+            // Ocultar alertas de servidor si existen
+            $('#serverErrorAlert').hide();
+
+            if (type === 'error') {
+                errorMessageSpan.text(message);
+                errorAlert.show();
+                successAlert.hide();
+            } else if (type === 'success') {
+                successMessageSpan.text(message);
+                successAlert.show();
+                errorAlert.hide();
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault(); // Prevenir el envío tradicional del formulario
+
+            const username = $('#username').val();
+            const password = $('#password').val();
+
+            try {
+                const response = await fetch('/api/authenticate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.jwt) {
+                        localStorage.setItem('jwtToken', data.jwt); // Guarda el JWT en localStorage
+                        showAlert('success', '¡Inicio de sesión exitoso! Redirigiendo...');
+                        // Redirige a la página principal después de un breve retraso
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        showAlert('error', 'Error desconocido en la autenticación. No se recibió el token JWT.');
+                    }
+                } else {
+                    // Manejar errores de autenticación (ej. credenciales incorrectas)
+                    const errorMessage = data.message || 'Credenciales incorrectas';
+                    showAlert('error', errorMessage);
+                }
+            } catch (error) {
+                console.error('Error de red o del servidor:', error);
+                showAlert('error', 'Error al intentar iniciar sesión. Inténtalo de nuevo más tarde.');
+            }
+        }
+
+        // Limpiar mensajes de error/éxito de JS al cargar la página si no son relevantes
+        $(document).ready(function() {
+            // Si hay un parámetro de error del servidor, mostrarlo y ocultar los de JS
+            if ($('#serverErrorAlert').length && $('#serverErrorAlert').is(':visible')) {
+                $('#jsErrorAlert').hide();
+                $('#jsSuccessAlert').hide();
+            } else {
+                // Si no hay error del servidor, asegurar que las alertas JS estén ocultas inicialmente
+                $('#jsErrorAlert').hide();
+                $('#jsSuccessAlert').hide();
+            }
+        });
+    </script>
 </body>
 </html>

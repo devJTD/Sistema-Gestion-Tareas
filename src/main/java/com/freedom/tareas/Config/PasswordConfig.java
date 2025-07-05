@@ -12,6 +12,7 @@ public class PasswordConfig {
     // BEAN DE PasswordEncoder - Usa BCrypt para codificar y verificar contraseñas de forma segura
     @Bean
     public PasswordEncoder passwordEncoder() {
+        System.out.println("LOG: Configurando BCryptPasswordEncoder como PasswordEncoder.");
         return new BCryptPasswordEncoder();
     }
 }
