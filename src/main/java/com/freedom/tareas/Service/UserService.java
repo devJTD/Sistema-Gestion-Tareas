@@ -21,8 +21,6 @@ import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Repository.TaskRepository;
 import com.freedom.tareas.Repository.UserRepository;
 
-
-
 @Service
 public class UserService implements UserDetailsService {
 
@@ -42,11 +40,13 @@ public class UserService implements UserDetailsService {
      * Realiza comprobaciones de existencia de username/email.
      *
      * @param usuario El objeto User a crear.
-     * @return true si el usuario fue creado exitosamente, false si ya existe un usuario con el mismo username o email.
+     * @return true si el usuario fue creado exitosamente, false si ya existe un
+     *         usuario con el mismo username o email.
      */
     public boolean crearUsuario(User usuario) {
         System.out.println("LOG: Intentando crear nuevo usuario: " + usuario.getUsername());
-        // Comprobaciones de existencia (pueden ser redundantes si el controlador ya las hace,
+        // Comprobaciones de existencia (pueden ser redundantes si el controlador ya las
+        // hace,
         // pero es una buena práctica tenerlas también en el servicio para robustez)
         if (userRepository.existsByUsername(usuario.getUsername())) {
             System.out.println("LOG: Intento de crear usuario con username existente: " + usuario.getUsername());
@@ -63,10 +63,12 @@ public class UserService implements UserDetailsService {
 
         try {
             userRepository.save(usuario);
-            System.out.println("LOG: Usuario '" + usuario.getUsername() + "' guardado exitosamente con rol: " + usuario.getRole());
+            System.out.println(
+                    "LOG: Usuario '" + usuario.getUsername() + "' guardado exitosamente con rol: " + usuario.getRole());
             return true;
         } catch (Exception e) {
-            System.err.println("LOG ERROR: Error al guardar usuario '" + usuario.getUsername() + "': " + e.getMessage());
+            System.err
+                    .println("LOG ERROR: Error al guardar usuario '" + usuario.getUsername() + "': " + e.getMessage());
             // Consider logging the stack trace using a logger in production environments
             return false;
         }
@@ -76,7 +78,8 @@ public class UserService implements UserDetailsService {
     public User guardarUsuario(User user) {
         System.out.println("LOG: Guardando usuario (método genérico): " + user.getUsername());
         User savedUser = userRepository.save(user);
-        System.out.println("LOG: Usuario '" + savedUser.getUsername() + "' guardado (método genérico) con ID: " + savedUser.getId());
+        System.out.println("LOG: Usuario '" + savedUser.getUsername() + "' guardado (método genérico) con ID: "
+                + savedUser.getId());
         return savedUser;
     }
 
@@ -132,8 +135,10 @@ public class UserService implements UserDetailsService {
         Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
-            System.err.println("LOG ERROR: Usuario con ID " + userId + " no encontrado para asignar rol de administrador.");
-            throw new UserNotFoundException("Usuario con ID " + userId + " no encontrado para asignar rol de administrador.");
+            System.err.println(
+                    "LOG ERROR: Usuario con ID " + userId + " no encontrado para asignar rol de administrador.");
+            throw new UserNotFoundException(
+                    "Usuario con ID " + userId + " no encontrado para asignar rol de administrador.");
         }
 
         User user = userOptional.get();
@@ -153,31 +158,51 @@ public class UserService implements UserDetailsService {
     public User getCurrentAuthenticatedUser() {
         System.out.println("LOG: Obteniendo usuario autenticado actual.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
             System.out.println("LOG: No hay usuario autenticado o es anónimo.");
             return null;
         }
         String username = authentication.getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
-                    System.err.println("LOG ERROR: Usuario autenticado '" + username + "' no encontrado en la base de datos.");
+                    System.err.println(
+                            "LOG ERROR: Usuario autenticado '" + username + "' no encontrado en la base de datos.");
                     return new UsernameNotFoundException("Usuario no encontrado: " + username);
                 });
         System.out.println("LOG: Usuario autenticado actual obtenido: " + user.getUsername());
         return user;
     }
 
+    // En UserService.java
     @Transactional
     public User updateProfile(User userDetails, String newPassword) {
         System.out.println("LOG: Intentando actualizar perfil del usuario con ID: " + userDetails.getId());
         User existingUser = userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> {
-                    System.err.println("LOG ERROR: Usuario con ID " + userDetails.getId() + " no encontrado para actualizar perfil.");
+                    System.err.println("LOG ERROR: Usuario con ID " + userDetails.getId()
+                            + " no encontrado para actualizar perfil.");
                     return new UserNotFoundException("Usuario no encontrado con ID: " + userDetails.getId());
                 });
 
-        // Actualiza solo los campos que el usuario puede editar
-        existingUser.setEmail(userDetails.getEmail());
+        // Validaciones para username y email (opcional, pero muy recomendable)
+        // Antes de actualizar, verifica si el nuevo username o email ya existen para
+        // otro usuario.
+        // Esto es crucial para evitar duplicados y errores en la base de datos.
+        if (!existingUser.getUsername().equals(userDetails.getUsername())
+                && userRepository.existsByUsername(userDetails.getUsername())) {
+            throw new IllegalArgumentException(
+                    "El nombre de usuario '" + userDetails.getUsername() + "' ya está en uso.");
+        }
+        if (!existingUser.getEmail().equals(userDetails.getEmail())
+                && userRepository.existsByEmail(userDetails.getEmail())) {
+            throw new IllegalArgumentException(
+                    "El correo electrónico '" + userDetails.getEmail() + "' ya está en uso.");
+        }
+
+        // Actualiza los campos que se permiten cambiar
+        existingUser.setUsername(userDetails.getUsername()); // ¡¡¡AÑADE ESTA LÍNEA!!!
+        existingUser.setEmail(userDetails.getEmail()); // ¡¡¡ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ!!!
         existingUser.setImageUrl(userDetails.getImageUrl());
         existingUser.setAge(userDetails.getAge());
         existingUser.setBirthDate(userDetails.getBirthDate());
@@ -189,6 +214,7 @@ public class UserService implements UserDetailsService {
             System.out.println("LOG: Contraseña actualizada para usuario ID: " + existingUser.getId());
         }
 
+        // Guardar los cambios
         User updatedUser = userRepository.save(existingUser);
         System.out.println("LOG: Perfil de usuario ID " + updatedUser.getId() + " guardado en la base de datos.");
         return updatedUser;

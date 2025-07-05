@@ -40,6 +40,7 @@ body.theme-dark {
     --tasks-due-soon-duedate-text: #555;
 }
 
+
 body {
     display: flex;
     flex-direction: column;
@@ -57,7 +58,7 @@ h2 {
 }
 
 .main-content {
-    flex: 1;
+    flex: 1; /* CLAVE: Permite que el contenido principal ocupe todo el espacio disponible, empujando el footer */
     padding-top: 20px;
     padding-bottom: 20px;
     background-color: var(--main-content-bg);
@@ -112,13 +113,62 @@ h2 {
     object-fit: cover;
     border-radius: 50% !important;
 }
+
 .perfil-img {
-    max-width: 200px; 
-    max-height: 200px; 
+    max-width: 200px;
+    max-height: 200px;
     width: auto;
-    height: auto; 
+    height: auto;
     border-radius: 5%;
     object-fit: cover;
-    display: block; 
-    margin: 0 auto 15px auto; 
+    display: block;
+    margin: 0 auto 15px auto;
+}
+
+/* Estilos específicos para los elementos presentes en profile.html */
+.card {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border-color); /* Para el borde de la tarjeta */
+}
+
+.card-header {
+    /* bg-primary y text-white ya están en el HTML, no necesitan CSS aquí a menos que quieras anular Bootstrap */
+    border-bottom-color: var(--border-color); /* Para el borde inferior del header de la tarjeta */
+}
+
+.form-label {
+    /* Si quieres que el color del label cambie con el tema, puedes usar --text-color */
+    color: var(--text-color);
+}
+
+.form-control {
+    background-color: var(--main-content-bg); /* O un color específico para inputs */
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* Estilos del Footer, adaptados de tu index-style.css */
+.footer {
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto; /* CLAVE: Empuja el footer hacia abajo */
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    background-color: var(--footer-bg); /* Usa la variable de tema */
+    color: var(--footer-text); /* Usa la variable de tema */
+}
+
+/* Este estilo se mantuvo de tu index-style.css original, si quieres que el footer siempre sea negro */
+#footerA {
+    background-color: black; /* Esto sobrescribe --footer-bg si está presente */
+}
+
+/* Para los rows dentro del main-content */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    margin-top: 20px;
 }
