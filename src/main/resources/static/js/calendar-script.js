@@ -1,4 +1,9 @@
 $(document).ready(function () {
+    // Función para obtener el token JWT desde localStorage
+    function getJwtToken() {
+        return localStorage.getItem('jwtToken');
+    }
+
     function prepareEditTaskFormModal(
         id,
         title,
@@ -34,7 +39,50 @@ $(document).ready(function () {
                 center: "title",
                 right: "dayGridMonth,timeGridWeek,timeGridDay",
             },
-            events: "/api/tasks-calendar",
+            // --- MODIFICACIÓN CLAVE AQUÍ ---
+            // FullCalendar usará esta función para obtener los eventos
+            events: function(fetchInfo, successCallback, failureCallback) {
+                const token = getJwtToken();
+                if (!token) {
+                    console.error("No se encontró el token JWT. El usuario no está autenticado para llamadas a la API.");
+                    failureCallback({ message: "No autenticado" });
+                    alert("Su sesión ha expirado o no tiene permisos. Por favor, inicie sesión de nuevo.");
+                    window.location.href = '/login'; // Redirigir a login si no hay token
+                    return;
+                }
+
+                // FullCalendar ya añade start y end a la URL, así que los usamos
+                const url = `/api/tasks-calendar?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}`;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // ¡Añadimos el token aquí!
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            console.error("Error de autenticación o acceso no autorizado al cargar tareas del calendario.");
+                            failureCallback({ message: "No autorizado" });
+                            alert("Su sesión ha expirado o no tiene permisos. Por favor, inicie sesión de nuevo.");
+                            window.location.href = '/login';
+                        }
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Tareas cargadas para el calendario:', data);
+                    successCallback(data); // Pasa los datos a FullCalendar
+                })
+                .catch(error => {
+                    console.error('Error al cargar las tareas del calendario:', error);
+                    failureCallback(error);
+                });
+            },
+            // --- FIN DE MODIFICACIÓN CLAVE ---
             eventClick: function (info) {
                 var task = info.event;
                 var taskId = task.id;
@@ -84,6 +132,8 @@ $(document).ready(function () {
                 $("#calendarTaskDetailsModal").modal("show");
             },
             eventChange: function (info) {
+                // Si permites arrastrar y soltar eventos, aquí actualizarías la tarea
+                // Esto requeriría otra llamada AJAX con el token JWT
             },
         });
         calendar.render();

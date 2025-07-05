@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,11 +44,12 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @NotNull(message = "El rol no puede ser nulo.")
+    // Ya no necesitamos @NotNull aquí, el rol se asigna programáticamente en el servicio.
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 20)
+    @Column(name = "role", nullable = false, length = 20) // La columna en DB puede seguir siendo NOT NULL
     private Role role;
-    // nuevbos campos
+
+    // Nuevos campos
     @Column(name = "image_url", length = 10000)
     private String imageUrl;
 

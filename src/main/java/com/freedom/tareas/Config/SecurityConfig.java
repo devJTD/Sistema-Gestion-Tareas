@@ -1,100 +1,225 @@
 package com.freedom.tareas.Config;
 
 import com.freedom.tareas.Service.UserService;
+import com.freedom.tareas.Security.JwtRequestFilter;
+import com.freedom.tareas.Security.JwtAuthenticationEntryPoint;
+import com.freedom.tareas.Security.JwtUtil;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
+
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+
 import java.io.IOException;
+import java.util.Collection;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // DEPENDENCIAS INYECTADAS - Servicio de usuario y codificador de contraseñas
+    // Sección de Dependencias
+    // Inyecta los servicios y filtros necesarios para la configuración de seguridad.
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final JwtUtil jwtUtil;
 
-    // MANEJADOR DE ÉXITO DE AUTENTICACIÓN PERSONALIZADO - Redirige al rol adecuado
-    // tras login
-    @Autowired
-    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
-
-    public SecurityConfig(UserService userService, PasswordEncoder passwordEncoder) {
+    public SecurityConfig(UserService userService,
+                          PasswordEncoder passwordEncoder,
+                          CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                          JwtUtil jwtUtil) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.jwtUtil = jwtUtil;
+        System.out.println("LOG: SecurityConfig inicializado.");
     }
 
-    // FILTRO DE SEGURIDAD - Define reglas de acceso, login, logout y manejo de
-    // errores
+    // Sección de Beans de Seguridad
+    // Crea una instancia de JwtRequestFilter como un Bean.
     @Bean
-    @SuppressWarnings({ "deprecation", "removal" })
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtRequestFilter jwtRequestFilterBean(UserService userService, JwtUtil jwtUtil) {
+        System.out.println("LOG: Creando bean JwtRequestFilter.");
+        return new JwtRequestFilter(userService, jwtUtil);
+    }
+
+    // Crea una instancia de JwtAuthenticationEntryPoint como un Bean.
+    @Bean
+    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
+        System.out.println("LOG: Creando bean JwtAuthenticationEntryPoint.");
+        return new JwtAuthenticationEntryPoint();
+    }
+
+    // Sección para deshabilitar el registro global del JwtRequestFilter
+    @Bean
+    public FilterRegistrationBean<JwtRequestFilter> jwtFilterRegistration(JwtRequestFilter jwtRequestFilterBean) {
+        System.out.println("LOG: Deshabilitando el registro global de JwtRequestFilter.");
+        FilterRegistrationBean<JwtRequestFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(jwtRequestFilterBean);
+        registrationBean.setEnabled(false); // <--- ¡CLAVE! Deshabilita el registro automático.
+        return registrationBean;
+    }
+
+    // Sección de RequestMatcher para APIs JWT
+    private RequestMatcher apiJwtRequestMatcher() {
+        System.out.println("LOG: Definiendo RequestMatcher para APIs JWT.");
+        @SuppressWarnings({ "removal", "deprecation" })
+        AntPathRequestMatcher apiBaseMatcher = new AntPathRequestMatcher("/api/**");
+        @SuppressWarnings({ "removal", "deprecation" })
+        AntPathRequestMatcher authenticateMatcher = new AntPathRequestMatcher("/api/authenticate");
+        return new AndRequestMatcher(apiBaseMatcher, new NegatedRequestMatcher(authenticateMatcher));
+    }
+
+    // Sección de Cadena de Filtros para APIs (JWT)
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("\n************************************************************************************");
+        System.out.println("DEBUG JWT: Configurando SecurityFilterChain para APIs (Orden 1).");
         http
-                // AUTORIZACIÓN DE RUTAS - Define qué roles acceden a qué rutas
+                .securityMatcher(apiJwtRequestMatcher())
+                .csrf(csrf -> {
+                    csrf.disable();
+                    System.out.println("DEBUG JWT: CSRF deshabilitado para APIs JWT (sin estado).");
+                })
+                .sessionManagement(session -> {
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    System.out.println("DEBUG JWT: Gestión de sesión establecida a STATELESS para APIs JWT.");
+                })
+                .exceptionHandling(exceptions -> {
+                    exceptions.authenticationEntryPoint(jwtAuthenticationEntryPoint());
+                    System.out.println("DEBUG JWT: AuthenticationEntryPoint configurado para APIs JWT.");
+                })
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtRequestFilterBean(userService, jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        System.out.println("DEBUG JWT: JwtRequestFilter añadido antes de UsernamePasswordAuthenticationFilter para APIs.");
+        System.out.println("************************************************************************************\n");
+        return http.build();
+    }
+
+    // Sección de Cadena de Filtros para la Aplicación Web (Sesión)
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("LOG: Configurando SecurityFilterChain para la aplicación web (Orden 2).");
+        http
+                .csrf(csrf -> {
+                    csrf.disable();
+                    System.out.println("LOG: CSRF deshabilitado para la aplicación web.");
+                })
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login/**", "/register/**", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/api/**", "/profile/**")
+                        .requestMatchers("/api/authenticate").permitAll()
+                        .requestMatchers("/admin", "/admin/**", "/admin/api/**").hasRole("ADMIN")
+                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**")
                         .hasAnyRole("USER", "ADMIN")
-                        .anyRequest().denyAll())
-                // CONFIGURACIÓN DE LOGIN - Página de login y redirección personalizada
-                .formLogin(form -> form
-                        .loginPage("/login")
+                        .anyRequest().authenticated())
+                .formLogin(form -> {
+                    form.loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl("/login?error")
-                        .permitAll())
-                // RECORDAR AL USUARIO - Mantiene la sesión activa usando una cookie remember-me
-                .rememberMe(remember -> remember
-                        .key("claveSeguraRecordarSesion123")
-                        .tokenValiditySeconds(86400 * 1)
-                        .userDetailsService(userService))
-                // CONFIGURACIÓN DE LOGOUT - Limpieza de sesión y redirección tras logout
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))
-                        .logoutSuccessUrl("/login?logout")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll())
-                // MANEJO DE ACCESO DENEGADO - Redirección cuando no se tiene permiso
-                .exceptionHandling(exceptions -> exceptions
-                        .accessDeniedHandler(accessDeniedHandler()));
+                        .permitAll();
+                    System.out.println("LOG: Formulario de login configurado.");
+                })
+                .rememberMe(remember -> {
+                    remember.key("claveSeguraRecordarSesion123")
+                            .tokenValiditySeconds(86400)
+                            .userDetailsService(userService);
+                    System.out.println("LOG: Funcionalidad 'Recordarme' configurada.");
+                })
+                .logout(logout -> {
+                    logout.logoutUrl("/logout")
+                          .logoutSuccessUrl("/login?logout")
+                          .invalidateHttpSession(true)
+                          .deleteCookies("JSESSIONID")
+                          .permitAll();
+                    System.out.println("LOG: Funcionalidad de cierre de sesión configurada.");
+                })
+                .exceptionHandling(exceptions -> {
+                    exceptions.accessDeniedHandler(accessDeniedHandler())
+                              .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
+                    System.out.println("LOG: Manejo de excepciones (acceso denegado y punto de entrada) configurado.");
+                });
 
         return http.build();
     }
 
-    // AUTENTICADOR PERSONALIZADO - Configura proveedor con servicio de usuario y
-    // codificador
+    // Sección de Proveedor de Autenticación
     @Bean
-    @SuppressWarnings("deprecation")
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userService);
+        System.out.println("LOG: Creando bean DaoAuthenticationProvider.");
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
         provider.setPasswordEncoder(this.passwordEncoder);
         return provider;
     }
 
-    // HANDLER DE ACCESO DENEGADO - Redirige a la raíz si no se tiene autorización
+    // Sección de AuthenticationManager
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        System.out.println("LOG: Exponiendo bean AuthenticationManager.");
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    // Sección de Manejador de Acceso Denegado
     @Bean
     @SuppressWarnings("Convert2Lambda")
     public AccessDeniedHandler accessDeniedHandler() {
+        System.out.println("LOG: Creando bean AccessDeniedHandler.");
         return new AccessDeniedHandler() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response,
-                    AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                               AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                System.out.println("LOG: Acceso denegado para la ruta: " + request.getRequestURI());
                 response.sendRedirect("/");
             }
         };
+    }
+
+    // Sección de Manejador de Éxito de Autenticación Personalizado
+    @Component
+    public static class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+        @Override
+        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                            Authentication authentication) throws IOException, ServletException {
+            System.out.println("LOG: Autenticación exitosa para el usuario: " + authentication.getName());
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+            if (isAdmin) {
+                System.out.println("LOG: Redirigiendo a /admin (rol ADMIN).");
+                response.sendRedirect("/admin");
+            } else {
+                System.out.println("LOG: Redirigiendo a / (rol USER).");
+                response.sendRedirect("/");
+            }
+        }
     }
 }

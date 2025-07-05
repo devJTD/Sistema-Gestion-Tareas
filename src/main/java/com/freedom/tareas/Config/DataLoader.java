@@ -1,11 +1,12 @@
 package com.freedom.tareas.Config;
 
-import com.freedom.tareas.Model.Role;
-import com.freedom.tareas.Model.User;
-import com.freedom.tareas.Repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import com.freedom.tareas.Model.Role;
+import com.freedom.tareas.Model.User;
+import com.freedom.tareas.Repository.UserRepository;
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -20,6 +21,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        System.out.println("LOG: Ejecutando DataLoader para verificar usuario ADMIN.");
         if (userRepository.findByUsername("admin").isEmpty()) {
             User adminUser = new User();
             adminUser.setUsername("admin");
@@ -28,9 +30,9 @@ public class DataLoader implements CommandLineRunner {
             adminUser.setRole(Role.ADMIN);
 
             userRepository.save(adminUser);
-            System.out.println("Usuario ADMIN 'admin' creado exitosamente.");
+            System.out.println("LOG: Usuario ADMIN 'admin' creado exitosamente.");
         } else {
-            System.out.println("Usuario ADMIN 'admin' ya existe. No se creó uno nuevo.");
+            System.out.println("LOG: Usuario ADMIN 'admin' ya existe. No se creó uno nuevo.");
         }
     }
 }
