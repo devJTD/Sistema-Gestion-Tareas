@@ -7,13 +7,12 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
 
-    // Sección de Atributos
     // Almacena la clave secreta JWT.
     private String secret;
+
     // Almacena el tiempo de expiración del JWT en milisegundos.
     private long expiration;
 
-    // Sección de Getters
     // Obtiene la clave secreta JWT.
     public String getSecret() {
         return secret;
@@ -24,7 +23,6 @@ public class JwtProperties {
         return expiration;
     }
 
-    // Sección de Setters
     // Establece la clave secreta JWT.
     public void setSecret(String secret) {
         this.secret = secret;

@@ -20,12 +20,9 @@ import jakarta.validation.Valid;
 public class TaskService {
 
     private final TaskRepository taskRepository;
-    // No necesitamos UserRepository aquí si solo se usa en el constructor para TaskService
-    // private final UserRepository userRepository; 
 
     public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
-        // this.userRepository = userRepository; // Si no se usa, se puede eliminar.
     }
 
     @Transactional
@@ -113,7 +110,7 @@ public class TaskService {
             throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
         }
         Task tarea = tareaEncontrada.get();
-        tarea.setActiveOnPage("off"); // Marcamos como inactiva en lugar de eliminarla físicamente
+        tarea.setActiveOnPage("off");
         taskRepository.save(tarea);
         System.out.println("LOG: Tarea ID " + id + " marcada como inactiva para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
     }

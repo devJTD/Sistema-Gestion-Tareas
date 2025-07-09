@@ -1,2 +1,1 @@
-# GestionTareas
 # Sistema-Gestion-Tareas

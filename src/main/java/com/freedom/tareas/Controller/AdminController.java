@@ -2,7 +2,6 @@ package com.freedom.tareas.Controller;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.freedom.tareas.Model.Task;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Service.TaskService;
@@ -27,19 +25,16 @@ import com.freedom.tareas.Service.UserService.UserNotFoundException;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
-    // Sección de Dependencias
     // Inyecta los servicios de usuario y tareas.
     private final UserService userService;
     private final TaskService taskService;
 
-    // Constructor de la clase
     // Inicializa los servicios inyectados.
     public AdminController(UserService userService, TaskService taskService) {
         this.userService = userService;
         this.taskService = taskService;
     }
 
-    // Sección de Panel Principal
     // Muestra la página principal del panel de administración.
     @GetMapping
     public String mostrarPanelAdmin(Model model) {
@@ -47,7 +42,6 @@ public class AdminController {
         return "admin";
     }
 
-    // Sección de Gestión de Usuarios
     // Lista todos los usuarios registrados en el sistema.
     @GetMapping("/api/users")
     @ResponseBody
@@ -63,8 +57,7 @@ public class AdminController {
     public ResponseEntity<User> obtenerUsuarioPorId(@PathVariable Long idUsuario) {
         System.out.println("LOG: Solicitud para obtener usuario con ID: " + idUsuario);
         Optional<User> usuario = userService.buscarUsuarioPorId(idUsuario);
-        return usuario.map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.notFound().build());
+        return usuario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Elimina un usuario y todas sus tareas asociadas.
@@ -107,7 +100,6 @@ public class AdminController {
         }
     }
 
-    // Sección de Gestión de Tareas por Usuario
     // Lista todas las tareas asociadas a un usuario específico.
     @GetMapping("/api/users/{idUsuario}/tasks")
     @ResponseBody

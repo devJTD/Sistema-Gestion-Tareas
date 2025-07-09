@@ -2,12 +2,10 @@ package com.freedom.tareas.dto;
 
 public class LoginRequest {
 
-    // Sección de Atributos
     // Define los campos para el nombre de usuario y la contraseña de la solicitud de login.
     private String username;
     private String password;
 
-    // Sección de Constructores
     // Constructor vacío necesario para la deserialización JSON.
     public LoginRequest() {
     }
@@ -18,7 +16,6 @@ public class LoginRequest {
         this.password = password;
     }
 
-    // Sección de Getters
     // Obtiene el nombre de usuario.
     public String getUsername() {
         return username;
@@ -29,7 +26,6 @@ public class LoginRequest {
         return password;
     }
 
-    // Sección de Setters
     // Establece el nombre de usuario.
     public void setUsername(String username) {
         this.username = username;
@@ -40,7 +36,6 @@ public class LoginRequest {
         this.password = password;
     }
 
-    // Sección de Utilidades
     // Proporciona una representación en cadena del objeto, ocultando la contraseña.
     @Override
     public String toString() {

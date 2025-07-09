@@ -18,15 +18,11 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.stereotype.Component;
 
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -34,7 +30,6 @@ import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
@@ -46,16 +41,13 @@ public class SecurityConfig {
     // Inyecta los servicios y filtros necesarios para la configuración de seguridad.
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final JwtUtil jwtUtil;
 
     public SecurityConfig(UserService userService,
                           PasswordEncoder passwordEncoder,
-                          CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
                           JwtUtil jwtUtil) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
-        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
         this.jwtUtil = jwtUtil;
         System.out.println("LOG: SecurityConfig inicializado.");
     }
@@ -81,7 +73,7 @@ public class SecurityConfig {
         System.out.println("LOG: Deshabilitando el registro global de JwtRequestFilter.");
         FilterRegistrationBean<JwtRequestFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(jwtRequestFilterBean);
-        registrationBean.setEnabled(false); // <--- ¡CLAVE! Deshabilita el registro automático.
+        registrationBean.setEnabled(false);
         return registrationBean;
     }
 
@@ -137,22 +129,14 @@ public class SecurityConfig {
                         .requestMatchers("/login/**", "/register/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/authenticate").permitAll()
                         .requestMatchers("/admin", "/admin/**", "/admin/api/**").hasRole("ADMIN")
-                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated())
+                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().denyAll())
                 .formLogin(form -> {
                     form.loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl("/login?error")
                         .permitAll();
                     System.out.println("LOG: Formulario de login configurado.");
-                })
-                .rememberMe(remember -> {
-                    remember.key("claveSeguraRecordarSesion123")
-                            .tokenValiditySeconds(86400)
-                            .userDetailsService(userService);
-                    System.out.println("LOG: Funcionalidad 'Recordarme' configurada.");
                 })
                 .logout(logout -> {
                     logout.logoutUrl("/logout")
@@ -200,26 +184,5 @@ public class SecurityConfig {
                 response.sendRedirect("/");
             }
         };
-    }
-
-    // Sección de Manejador de Éxito de Autenticación Personalizado
-    @Component
-    public static class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-
-        @Override
-        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                            Authentication authentication) throws IOException, ServletException {
-            System.out.println("LOG: Autenticación exitosa para el usuario: " + authentication.getName());
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-            if (isAdmin) {
-                System.out.println("LOG: Redirigiendo a /admin (rol ADMIN).");
-                response.sendRedirect("/admin");
-            } else {
-                System.out.println("LOG: Redirigiendo a / (rol USER).");
-                response.sendRedirect("/");
-            }
-        }
     }
 }

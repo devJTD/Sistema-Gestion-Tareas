@@ -1,7 +1,6 @@
 package com.freedom.tareas.Model;
 
 import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,12 +43,10 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    // Ya no necesitamos @NotNull aquí, el rol se asigna programáticamente en el servicio.
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 20) // La columna en DB puede seguir siendo NOT NULL
+    @Column(name = "role", nullable = false, length = 20)
     private Role role;
 
-    // Nuevos campos
     @Column(name = "image_url", length = 10000)
     private String imageUrl;
 
@@ -62,6 +59,7 @@ public class User {
     @Column(name = "country", length = 100)
     private String country;
 
+    //Constructor para crear un usuario con solo los campos necesarios
     public User(String username, String password, String email, Role role) {
         this.username = username;
         this.password = password;

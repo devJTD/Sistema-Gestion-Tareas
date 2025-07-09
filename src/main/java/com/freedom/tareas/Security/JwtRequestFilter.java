@@ -17,9 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    // Sección de Dependencias
     // Inyecta el servicio de usuario para cargar detalles del usuario.
     private final UserService userService;
+
     // Inyecta la utilidad JWT para operaciones de token.
     private final JwtUtil jwtUtil;
 
@@ -29,7 +29,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // Sección de Filtrado de Solicitudes
     // Intercepta las solicitudes HTTP para validar el token JWT presente en el encabezado.
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -45,22 +44,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Extrae el JWT del encabezado "Authorization" si está presente y tiene el prefijo "Bearer ".
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
-            // --- DEBUG: Imprime el token JWT recibido con separación ---
+
             System.out.println("\n************************************************************************************");
             System.out.println("DEBUG JWT: JWT recibido en el filtro para la ruta: " + request.getRequestURI());
             System.out.println("DEBUG JWT: Token: " + jwt);
-            // --- FIN DEBUG ---
+
             try {
                 username = jwtUtil.extractUsername(jwt);
-                // --- DEBUG: Imprime el username extraído ---
                 System.out.println("DEBUG JWT: Username extraído del JWT: " + username);
-                // --- FIN DEBUG ---
             } catch (Exception e) {
                 System.err.println("DEBUG JWT ERROR: Error al extraer username del JWT para la ruta " + request.getRequestURI() + ": " + e.getMessage());
             }
         } else {
-            // Este mensaje ahora solo debería aparecer para rutas que *realmente* esperan un JWT
-            // y no lo tienen.
             System.out.println("LOG: No se encontró encabezado 'Authorization' o no es un token Bearer para la ruta: " + request.getRequestURI());
         }
 
@@ -83,10 +78,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 // Establece el objeto de autenticación en el SecurityContext de Spring.
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                // --- DEBUG: Autenticación JWT exitosa ---
                 System.out.println("DEBUG JWT: Autenticación JWT exitosa para usuario: " + username);
                 System.out.println("************************************************************************************\n");
-                // --- FIN DEBUG ---
             } else {
                 System.out.println("DEBUG JWT: Validación de token fallida para usuario: " + username + " en la ruta: " + request.getRequestURI());
             }

@@ -28,19 +28,17 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class JwtUtil {
 
-    // Sección de Configuración de Propiedades
     // Inyecta la clave secreta JWT desde las propiedades de la aplicación.
     @Value("${jwt.secret}")
     private String secretString;
+
     // Inyecta el tiempo de expiración del JWT desde las propiedades de la aplicación.
     @Value("${jwt.expiration}")
     private long jwtExpirationTime;
 
-    // Sección de Clave Secreta
     // Almacena la clave secreta decodificada para la firma de JWT.
     private SecretKey SECRET_KEY;
 
-    // Sección de Inicialización
     // Inicializa la clave secreta después de que Spring inyecte las propiedades.
     @PostConstruct
     public void init() {
@@ -72,7 +70,7 @@ public class JwtUtil {
         }
         Object rolesObj = claims.get("roles");
         List<String> roles;
-        if (rolesObj instanceof List<?> list) {
+        if (rolesObj instanceof List<?> list) { 
             roles = list.stream()
                     .map(Object::toString)
                     .collect(Collectors.toList());
