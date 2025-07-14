@@ -26,15 +26,18 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/trash")
 public class TrashController {
 
+    // Inyecta los servicios de tareas y usuarios.
     private final TaskService taskService;
     private final UserService userService;
 
+    // Constructor para la inyección de dependencias.
     public TrashController(TaskService taskService, UserService userService) {
         this.taskService = taskService;
         this.userService = userService;
     }
 
-    // Muestra la página de la papelera con las tareas eliminadas
+    // Muestra la vista de la papelera con las tareas "eliminadas".
+    // Obtiene el usuario actual y carga sus tareas marcadas como "off".
     @GetMapping
     public String showTrash(Model model, HttpServletRequest request) {
         System.out.println("LOG: Accediendo a la página de la papelera.");
@@ -45,12 +48,10 @@ public class TrashController {
         
         List<Task> tasksInTrash = taskService.obtenerTareasEnPapelera(currentUser);
 
-        // Calcular los días transcurridos desde la eliminación para cada tarea
+        // Calcula y loguea los días que cada tarea lleva en la papelera.
         tasksInTrash.forEach(task -> {
             if (task.getDeletedAt() != null) {
                 long days = ChronoUnit.DAYS.between(task.getDeletedAt(), LocalDate.now());
-                // Puedes añadir esto como un atributo transitorio en la Task si usas Thymeleaf para mostrarlo directamente
-                // O procesarlo en el frontend
                 System.out.println("LOG: Tarea ID " + task.getId() + " lleva " + days + " días en la papelera.");
             }
         });
@@ -62,7 +63,8 @@ public class TrashController {
         return "trash";
     }
 
-    // Restaura una tarea de la papelera
+    // Maneja la solicitud para restaurar una tarea de la papelera.
+    // Llama al servicio para cambiar el estado de la tarea a activa.
     @PostMapping("/restore/{id}")
     public String restoreTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         System.out.println("LOG: Solicitud para restaurar tarea con ID: " + id + " de la papelera.");
@@ -81,7 +83,8 @@ public class TrashController {
         return "redirect:/trash";
     }
 
-    // Elimina permanentemente una tarea de la papelera
+    // Maneja la solicitud para eliminar una tarea de forma permanente.
+    // Invoca el servicio para remover la tarea definitivamente de la base de datos.
     @PostMapping("/delete-permanent/{id}")
     public String deletePermanent(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         System.out.println("LOG: Solicitud para eliminar permanentemente tarea con ID: " + id + " de la papelera.");
@@ -97,6 +100,6 @@ public class TrashController {
             System.err.println("LOG ERROR: Error al eliminar permanentemente tarea con ID " + id + " para el usuario " + username + ": " + e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/trash";
+        return "redirect:/trash"; 
     }
 }

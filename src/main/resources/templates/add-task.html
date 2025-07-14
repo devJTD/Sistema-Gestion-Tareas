@@ -164,7 +164,7 @@
                         <option value="" disabled th:selected="${taskFormObject.status == null}">Elegir...</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="En Proceso">En Proceso</option>
-                        </select>
+                    </select>
                     <div class="invalid-feedback" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Error en
                         estado</div>
                 </div>

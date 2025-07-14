@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
@@ -242,9 +241,9 @@
                 </thead>
                 <tbody>
                     <tr th:each="task : ${tasks}" th:classappend="
-                                        ${task.priority != null ? 'task-priority-' + #strings.toLowerCase(task.priority) : ''} +
-                                        ${task.status != null ? ' task-status-' + #strings.toLowerCase(task.status) : ''}
-                                    ">
+                                ${task.priority != null ? 'task-priority-' + #strings.toLowerCase(task.priority) : ''} +
+                                ${task.status != null ? ' task-status-' + #strings.toLowerCase(task.status) : ''}
+                            ">
                         <td th:text="${task.id}">1</td>
                         <td th:text="${task.title}">Diseñar UI</td>
                         <td th:text="${task.description}">Crear mockups.</td>
@@ -267,12 +266,13 @@
                         <td>
                             <button type="button" class="btn btn-sm btn-info edit-task-btn" data-toggle="modal"
                                 data-target="#editTaskModal" th:attr="data-task-id=${task.id},
-                                                                            data-task-title=${task.title},
-                                                                            data-task-description=${task.description},
-                                                                            data-task-duedate=${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''},
-                                                                            data-task-priority=${task.priority},
-                                                                            data-task-status=${task.status},
-                                                                            data-task-etiqueta=${task.etiqueta}" title="Editar">
+                                                                    data-task-title=${task.title},
+                                                                    data-task-description=${task.description},
+                                                                    data-task-duedate=${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''},
+                                                                    data-task-priority=${task.priority},
+                                                                    data-task-status=${task.status},
+                                                                    data-task-etiqueta=${task.etiqueta}"
+                                title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
 
@@ -294,14 +294,12 @@
             </table>
         </div>
 
-        <div
-            th:if="${#lists.isEmpty(tasks) and (statusFilter == null or statusFilter.isEmpty()) and (priorityFilter == null or priorityFilter.isEmpty()) and (etiquetaFilter == null or etiquetaFilter.isEmpty()) and (search == null or search.isEmpty())}"
+        <div th:if="${#lists.isEmpty(tasks) and (statusFilter == null or statusFilter.isEmpty()) and (priorityFilter == null or priorityFilter.isEmpty()) and (etiquetaFilter == null or etiquetaFilter.isEmpty()) and (search == null or search.isEmpty())}"
             class="alert alert-info mt-3" role="alert">
             <i class="fas fa-info-circle"></i> No hay tareas registradas. ¡Comienza
             agregando una nueva!
         </div>
-        <div
-            th:if="${#lists.isEmpty(tasks) and (statusFilter != null or priorityFilter != null or etiquetaFilter != null or search != null)}"
+        <div th:if="${#lists.isEmpty(tasks) and (statusFilter != null or priorityFilter != null or etiquetaFilter != null or search != null)}"
             class="alert alert-info mt-3" role="alert">
             <i class="fas fa-info-circle"></i> No hay tareas que coincidan con los
             criterios de búsqueda/filtro.
@@ -407,8 +405,9 @@
             </div>
         </div>
     </div>
-    
-    <div class="modal fade" id="taskCompletedModal" tabindex="-1" aria-labelledby="taskCompletedModalLabel" aria-hidden="true">
+
+    <div class="modal fade" id="taskCompletedModal" tabindex="-1" aria-labelledby="taskCompletedModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -427,7 +426,7 @@
                         <i class="fas fa-times"></i> Cancelar
                     </button>
                     <form id="confirmCompleteForm" method="post" style="display: inline;">
-                        <input type="hidden" name="_method" value="post"/> 
+                        <input type="hidden" name="_method" value="post" />
                         <button type="submit" class="btn btn-success" id="confirmCompleteButton">
                             <i class="fas fa-check-circle"></i> Marcar como Completada
                         </button>

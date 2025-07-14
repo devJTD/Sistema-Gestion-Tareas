@@ -167,7 +167,8 @@
                         <td th:text="${task.etiqueta != null && !task.etiqueta.isEmpty() ? task.etiqueta : '-'}">
                             -
                         </td>
-                        <td th:text="${task.deletedAt != null ? #temporals.format(task.deletedAt, 'dd-MM-yyyy') : 'N/A'}">
+                        <td
+                            th:text="${task.deletedAt != null ? #temporals.format(task.deletedAt, 'dd-MM-yyyy') : 'N/A'}">
                             Fecha de Eliminación
                         </td>
                         <td>
@@ -269,9 +270,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script th:src="@{/js/themes-script.js}"></script>
     <script>
-        // Script para manejar los modales de restauración y eliminación permanente
         $(document).ready(function () {
-            // Modal para Restaurar
             $('#restoreTaskModal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var taskId = button.data('task-id');
@@ -281,7 +280,6 @@
                 modal.find('#restoreTaskFormInModal').attr('action', '/trash/restore/' + taskId);
             });
 
-            // Modal para Eliminar Permanentemente
             $('#deletePermanentTaskModal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var taskId = button.data('task-id');
@@ -291,12 +289,9 @@
                 modal.find('#deletePermanentTaskFormInModal').attr('action', '/trash/delete-permanent/' + taskId);
             });
 
-            // Lógica para el cierre de sesión
             document.getElementById('logout-form').addEventListener('submit', function (event) {
-                event.preventDefault(); // Evita el envío predeterminado del formulario
-                // En un entorno de producción real, aquí se podría enviar una solicitud AJAX al backend para un cierre de sesión seguro.
-                // Para este ejemplo, simplemente redirigimos.
-                window.location.href = '/login?logout'; // Redirige a la página de inicio de sesión con mensaje de logout
+                event.preventDefault();
+                window.location.href = '/login?logout';
             });
         });
     </script>

@@ -64,11 +64,9 @@ public class Task {
     @Column(name = "completion_date")
     private LocalDate completionDate;
 
-    // Nuevo campo para manejar la papelera de reciclaje
     @Column(name = "active_on_page")
     private String activeOnPage;
 
-    // Nuevo campo para registrar la fecha en que la tarea fue enviada a la papelera
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "deleted_at")
     private LocalDate deletedAt;
@@ -81,6 +79,6 @@ public class Task {
         this.dueDate = dueDate;
         this.priority = priority;
         this.status = status;
-        this.activeOnPage = "on"; // Por defecto, al crear una tarea está activa
+        this.activeOnPage = "on";
     }
 }

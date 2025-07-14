@@ -28,17 +28,15 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // Elimina todas las tareas asociadas al ID de un usuario
     void deleteByUserId(Long userId);
 
-    // Nuevo método: Busca tareas inactivas que fueron eliminadas antes o en una fecha específica
+    // Busca tareas inactivas que fueron eliminadas antes o en una fecha específica
     List<Task> findByActiveOnPageAndDeletedAtBefore(String activeOnPage, LocalDate date);
 
-    // --- Métodos añadidos para la gestión de la papelera ---
-
-    // Nuevo: Busca una tarea por su ID y el usuario, para operaciones cuando NO está en la papelera (activeOnPage = "on")
+    // Busca una tarea por su ID y el usuario, para operaciones cuando NO está en la papelera (activeOnPage = "on")
     Optional<Task> findByIdAndUserAndActiveOnPage(Long id, User user, String activeOnPage);
 
-    // Nuevo: Busca una tarea por su ID, el usuario, y que esté en la papelera (activeOnPage = "trash")
+    // Busca una tarea por su ID, el usuario, y que esté en la papelera (activeOnPage = "trash")
     Optional<Task> findByIdAndUserAndActiveOnPageAndDeletedAtIsNotNull(Long id, User user, String activeOnPage);
 
-    // Nuevo: Busca todas las tareas que estén en la papelera (activeOnPage = "trash"), para la limpieza automática
+    // Busca todas las tareas que estén en la papelera (activeOnPage = "trash"), para la limpieza automática
     List<Task> findByActiveOnPage(String activeOnPage);
 }

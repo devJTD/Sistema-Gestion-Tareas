@@ -14,28 +14,26 @@ import com.freedom.tareas.Repository.TaskRepository;
 @Service
 public class TrashCleanupService {
 
+    // Inyección del repositorio para interactuar con la base de datos de tareas.
     private final TaskRepository taskRepository;
 
+    // Constructor para que Spring inyecte automáticamente TaskRepository.
     public TrashCleanupService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
-    /**
-     * Tarea programada para limpiar automáticamente las tareas en la papelera
-     * que superen los 20 días desde su eliminación.
-     * Se ejecuta cada día a las 2:00 AM (hora del servidor).
-     */
-    @Scheduled(cron = "0 0 2 * * ?") // Cron expression: segundos, minutos, horas, día del mes, mes, día de la semana
-    @Transactional // Asegura que la operación de eliminación se realice de forma transaccional
+    // Este método se ejecuta automáticamente cada día a las 2:00 AM.
+    // Todas las operaciones dentro son parte de una única transacción.
+    @Scheduled(cron = "0 0 2 * * ?") 
+    @Transactional 
     public void cleanupOldTasksInTrash() {
         System.out.println("LOG: *** INICIANDO TAREA PROGRAMADA DE LIMPIEZA DE PAPELERA ***");
 
-        // Calculamos la fecha límite: 20 días antes de la fecha actual.
-        // Cualquier tarea eliminada en o antes de esta fecha será elegible para eliminación.
+        // Calcula la fecha de corte: 20 días atrás.
         LocalDate twentyDaysAgo = LocalDate.now().minusDays(20);
         System.out.println("LOG: *** Fecha de hoy: " + LocalDate.now() + " | Fecha límite para eliminación (20 días atrás): " + twentyDaysAgo + " ***");
 
-        // *** CAMBIO CRÍTICO AQUÍ: USAMOS "off" EN LUGAR DE "trash" ***
+        // Busca tareas en la papelera ('activeOnPage' = "off") que fueron eliminadas antes de la fecha de corte.
         List<Task> tasksToDelete = taskRepository.findByActiveOnPageAndDeletedAtBefore("off", twentyDaysAgo);
 
         int deletedCount = 0;
@@ -43,15 +41,19 @@ public class TrashCleanupService {
             System.out.println("LOG: *** No se encontraron tareas elegibles para eliminar de la papelera. ***");
         } else {
             System.out.println("LOG: *** Se encontraron " + tasksToDelete.size() + " tareas en papelera para evaluar. ***");
+            // Itera sobre las tareas candidatas.
             for (Task task : tasksToDelete) {
+                // Verifica que la tarea tenga una fecha de eliminación.
                 if (task.getDeletedAt() != null) {
+                    // Calcula los días que la tarea lleva en la papelera.
                     long daysInTrash = ChronoUnit.DAYS.between(task.getDeletedAt(), LocalDate.now());
 
                     System.out.println("LOG: *** Evaluando tarea ID: " + task.getId() + ", Título: '" + task.getTitle() + "', Eliminada el: " + task.getDeletedAt() + ", Días en papelera: " + daysInTrash + " ***");
 
+                    // Si la tarea lleva 20 días o más en la papelera, la elimina permanentemente.
                     if (daysInTrash >= 20) {
                         System.out.println("LOG: *** ELIMINANDO PERMANENTEMENTE TAREA ID: " + task.getId() + " - Título: '" + task.getTitle() + "' (Superó los 20 días: " + daysInTrash + " días) ***");
-                        taskRepository.delete(task); // Elimina la tarea de la base de datos
+                        taskRepository.delete(task); 
                         deletedCount++;
                     } else {
                         System.out.println("LOG: *** Tarea ID: " + task.getId() + " - NO se elimina (Días en papelera: " + daysInTrash + ", menos de 20). ***");

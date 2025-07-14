@@ -129,7 +129,6 @@ public class SecurityConfig {
                         .requestMatchers("/login/**", "/register/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/authenticate").permitAll()
                         .requestMatchers("/admin", "/admin/**", "/admin/api/**").hasRole("ADMIN")
-                        // Aquí se añadió "/archived/**"
                         .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**", "/trash/**", "/archived/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().denyAll())
                 .formLogin(form -> {

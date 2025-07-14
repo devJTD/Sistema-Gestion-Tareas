@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    // Sección de Utilidades de Formato
-    // Formatea una cadena de fecha a un formato legible en español.
     function formatDate(dateString) {
         if (!dateString) return 'N/A';
         const date = new Date(dateString + 'T00:00:00');
@@ -11,17 +9,15 @@ $(document).ready(function() {
         return date.toLocaleDateString('es-ES', options);
     }
 
-    // Normaliza una cadena de texto a formato de título (primera letra mayúscula).
     function normalizeCase(str) {
         if (!str) return '';
         return str.replace(/_/g, ' ')
-                   .toLowerCase()
-                   .split(' ')
-                   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                   .join(' ');
+                    .toLowerCase()
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
     }
 
-    // Sección de Tokens CSRF (Mantenemos las funciones, pero no las usaremos si CSRF está deshabilitado)
     function getCsrfToken() {
         return $("meta[name='_csrf']").attr("content");
     }
@@ -30,7 +26,6 @@ $(document).ready(function() {
         return $("meta[name='_csrf_header']").attr("content");
     }
 
-    // Sección de Modales de Mensaje
     function showMessageModal(message, isError = false) {
         const modalBody = $('#messageModalBody');
         modalBody.html(`<p>${message}</p>`);
@@ -42,7 +37,6 @@ $(document).ready(function() {
         $('#messageModal').modal('show');
     }
 
-    // Sección de Carga de Usuarios
     function loadUsers() {
         console.log("JS LOG: Cargando usuarios...");
         $.ajax({
@@ -68,7 +62,6 @@ $(document).ready(function() {
         });
     }
 
-    // Sección de Recarga de Tareas de Usuario
     function reloadUserTasks(userId) {
         console.log("JS LOG: Recargando tareas para el usuario ID:", userId);
         if (!userId) {
@@ -140,10 +133,8 @@ $(document).ready(function() {
         });
     }
 
-    // Sección de Inicialización
     loadUsers();
 
-    // Sección de Eventos de Selección de Usuario
     $('#userSelect').change(function() {
         const userId = $(this).val();
         console.log("JS LOG: Usuario seleccionado, ID:", userId);
@@ -192,7 +183,6 @@ $(document).ready(function() {
         }
     });
 
-    // Sección de Asignación de Rol de Administrador
     $('#confirmAssignAdminModal').on('show.bs.modal', function(event) {
         const userId = $('#userSelect').val();
         const username = $('#userSelect option:selected').text();
@@ -217,9 +207,9 @@ $(document).ready(function() {
                 console.log("JS LOG: Rol ADMIN asignado exitosamente a usuario ID:", userId);
                 showMessageModal(`El usuario "${username}" ahora tiene el rol de ADMIN.`, false);
                 $('#confirmAssignAdminModal').modal('hide');
-                $('#userSelect').val(''); // Deselecciona el usuario
-                $('#userSelect').change(); // Dispara el cambio para actualizar la UI y deshabilitar botones
-                loadUsers(); // Recarga la lista de usuarios para actualizar roles en el select
+                $('#userSelect').val('');
+                $('#userSelect').change();
+                loadUsers();
             },
             error: function(xhr, status, error) {
                 console.error('JS ERROR: Error al asignar rol de administrador:', error, xhr.responseText);
@@ -228,8 +218,6 @@ $(document).ready(function() {
         });
     });
 
-    // Sección de Eliminación de Usuario
-    // Manejador explícito para el botón de eliminar usuario
     $('#deleteUserBtn').click(function() {
         const userId = $('#userSelect').val();
         const username = $('#userSelect option:selected').text();
@@ -241,7 +229,6 @@ $(document).ready(function() {
             return;
         }
 
-        // Rellenar el modal de confirmación y mostrarlo manualmente
         $('#userToDeleteUsername').text(username);
         $('#deleteUserId').val(userId);
         $('#confirmDeleteUserModal').modal('show');
@@ -249,7 +236,6 @@ $(document).ready(function() {
     });
 
 
-    // Envía la solicitud para eliminar un usuario.
     $('#confirmDeleteUserButton').click(function() {
         const userId = $('#deleteUserId').val();
         const username = $('#userToDeleteUsername').text();
@@ -267,9 +253,9 @@ $(document).ready(function() {
                 console.log("JS LOG: Usuario ID " + userId + " eliminado exitosamente.");
                 showMessageModal(`El usuario "${username}" ha sido eliminado exitosamente.`, false);
                 $('#confirmDeleteUserModal').modal('hide');
-                $('#userSelect').val(''); // Limpia la selección del usuario
-                $('#userSelect').change(); // Dispara el evento change para ocultar secciones y recargar
-                loadUsers(); // Recarga la lista de usuarios en el select
+                $('#userSelect').val('');
+                $('#userSelect').change();
+                loadUsers();
             },
             error: function(xhr, status, error) {
                 console.error('JS ERROR: Error al eliminar usuario:', error, xhr.responseText);
@@ -286,7 +272,6 @@ $(document).ready(function() {
         });
     });
 
-    // Sección de Edición de Tareas (en modal)
     $(document).on('click', '.edit-task-btn', function() {
         const taskId = $(this).data('task-id');
         const taskTitle = $(this).data('task-title');
@@ -342,7 +327,6 @@ $(document).ready(function() {
         });
     });
 
-    // Sección de Eliminación de Tareas (en modal)
     $(document).on('click', '.delete-task-btn', function() {
         const taskId = $(this).data('task-id');
         console.log("JS LOG: Preparando modal para eliminar tarea ID:", taskId);
