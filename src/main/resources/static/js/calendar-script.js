@@ -4,6 +4,12 @@ $(document).ready(function () {
         return localStorage.getItem('jwtToken');
     }
 
+    /**
+     * Prepara el modal de edición de tareas con los datos proporcionados.
+     * Se ha ajustado para no mostrar "Completada" en el selector de estado,
+     * ya que ahora hay un botón específico para marcar como completada en la vista de lista.
+     * Para el calendario, esto asegura consistencia.
+     */
     function prepareEditTaskFormModal(
         id,
         title,
@@ -19,7 +25,21 @@ $(document).ready(function () {
         $("#editTaskDescription").val(description);
         $("#editTaskDueDate").val(dueDate);
         $("#editTaskPriority").val(priority);
-        $("#editTaskStatus").val(status);
+
+        // --- INICIO DE MODIFICACIÓN CLAVE PARA ELIMINAR OPCIÓN 'COMPLETADA' ---
+        var $editTaskStatus = $("#editTaskStatus");
+        $editTaskStatus.empty(); // Limpiar opciones existentes
+        $editTaskStatus.append('<option value="Pendiente">Pendiente</option>');
+        $editTaskStatus.append('<option value="En Proceso">En Proceso</option>');
+        // Si la tarea ya está completada, se establece en "Pendiente" por defecto en el editor,
+        // ya que la acción de "Completada" debe hacerse a través del botón específico en la vista de tareas.
+        if (status === 'Completada') {
+            $editTaskStatus.val('Pendiente');
+        } else {
+            $editTaskStatus.val(status);
+        }
+        // --- FIN DE MODIFICACIÓN CLAVE ---
+        
         $("#editTaskEtiqueta").val(etiqueta);
     }
 
@@ -102,21 +122,17 @@ $(document).ready(function () {
                     .off("click")
                     .on("click", function () {
                         $("#calendarTaskDetailsModal").modal("hide");
-                        $("#editTaskId").val(taskId);
-                        $("#editTaskTitle").val(task.title);
-                        $("#editTaskDescription").val(task.extendedProps.description);
-                        var dueDate = task.start ? new Date(task.start) : null;
-                        if (dueDate) {
-                            var year = dueDate.getFullYear();
-                            var month = (dueDate.getMonth() + 1).toString().padStart(2, "0");
-                            var day = dueDate.getDate().toString().padStart(2, "0");
-                            $("#editTaskDueDate").val(`${year}-${month}-${day}`);
-                        } else {
-                            $("#editTaskDueDate").val("");
-                        }
-                        $("#editTaskPriority").val(task.extendedProps.priority);
-                        $("#editTaskStatus").val(task.extendedProps.status);
-                        $("#editTaskEtiqueta").val(task.extendedProps.etiqueta);
+                        // Al hacer clic en Editar desde el modal de detalles del calendario,
+                        // usamos prepareEditTaskFormModal que ya maneja la lógica de ocultar 'Completada'.
+                        prepareEditTaskFormModal(
+                            taskId,
+                            task.title,
+                            task.extendedProps.description,
+                            task.start ? new Date(task.start).toISOString().split('T')[0] : "", // Formato YYYY-MM-DD
+                            task.extendedProps.priority,
+                            task.extendedProps.status,
+                            task.extendedProps.etiqueta
+                        );
                         $("#editTaskModal").modal("show");
                     });
 

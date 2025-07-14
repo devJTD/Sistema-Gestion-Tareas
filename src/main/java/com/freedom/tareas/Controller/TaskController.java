@@ -75,7 +75,7 @@ public class TaskController {
         model.addAttribute("user", currentUser);
         List<Task> allTasks = new ArrayList<>();
         if (currentUser != null) {
-            allTasks = taskService.obtenerTareasPorUsuario(currentUser);
+            allTasks = taskService.obtenerTareasPorUsuario(currentUser); // Obtiene solo tareas activas
             System.out.println("LOG: Cargando resumen de tareas para el usuario: " + username);
         } else {
             System.out.println("LOG: Usuario no autenticado en la página principal.");
@@ -122,6 +122,7 @@ public class TaskController {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
         model.addAttribute("user", currentUser);
         List<Task> filteredTasks;
+        // Este método ya solo obtiene tareas activas (activeOnPage="on")
         filteredTasks = taskService.obtenerTareasFiltradasYOrdenadasPorUsuario(currentUser, search, statusFilter,
                 priorityFilter, etiquetaFilter, sortBy, sortDir);
         System.out.println("LOG: Cargando tareas filtradas y ordenadas para el usuario: " + username);
@@ -163,6 +164,7 @@ public class TaskController {
         String username = authentication.getName();
         User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        // Este método ya obtiene solo tareas activas
         List<Task> allTasks = taskService.obtenerTareasPorUsuario(currentUser);
         // --- DEBUG: Imprime la finalización de la solicitud API de calendario ---
         System.out.println("DEBUG JWT: Tareas obtenidas para el calendario del usuario: " + username);
@@ -215,10 +217,10 @@ public class TaskController {
     @PostMapping("/tasks/save")
     @SuppressWarnings("CallToPrintStackTrace")
     public String saveTask(@Valid @ModelAttribute("taskFormObject") Task task,
-                           BindingResult bindingResult,
-                           RedirectAttributes redirectAttributes,
-                           Model model,
-                           HttpServletRequest request) {
+                            BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes,
+                            Model model,
+                            HttpServletRequest request) {
         System.out.println("LOG: Solicitud para guardar nueva tarea: " + task.getTitle());
         if (bindingResult.hasErrors()) {
             bindingResult.getAllErrors().forEach(error -> System.out.println("ERROR -> " + error));
@@ -233,9 +235,7 @@ public class TaskController {
                     .orElseThrow(() -> new RuntimeException(
                             "Usuario autenticado no encontrado en la base de datos: " + username));
             task.setUser(currentUser);
-            if (task.getActiveOnPage() == null || task.getActiveOnPage().isEmpty()) {
-                task.setActiveOnPage("on");
-            }
+            // activeOnPage se establece a "on" por defecto en TaskService.crearTarea
             taskService.crearTarea(task);
             System.out.println("LOG: Tarea '" + task.getTitle() + "' agregada exitosamente para el usuario: " + username);
             redirectAttributes.addFlashAttribute("successMessage", "¡Tarea agregada exitosamente!");
@@ -250,22 +250,45 @@ public class TaskController {
         return "redirect:/tasks";
     }
 
-    // Sección de Eliminar Tarea
-    // Elimina una tarea específica del usuario autenticado.
-    @PostMapping("/tasks/delete/{id}")
-    public String deleteTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        System.out.println("LOG: Solicitud para eliminar tarea con ID: " + id);
+    // Sección para Marcar Tarea como Completada
+    @PostMapping("/tasks/complete/{id}")
+    public String completeTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        System.out.println("LOG: Solicitud para marcar tarea con ID: " + id + " como completada.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         User currentUser = userService.buscarEntidadPorUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
         try {
-            taskService.eliminarTareaPorUsuario(id, currentUser);
-            System.out.println("LOG: Tarea con ID " + id + " eliminada exitosamente por el usuario: " + username);
-            redirectAttributes.addFlashAttribute("successMessage", "¡Tarea eliminada exitosamente!");
+            // Llama al método en el servicio que actualiza status y completionDate
+            taskService.marcarTareaComoCompletada(id, currentUser); 
+            System.out.println("LOG: Tarea con ID " + id + " marcada como completada exitosamente por el usuario: " + username);
+            redirectAttributes.addFlashAttribute("successMessage", "¡Tarea marcada como completada!");
+            // IMPORTANTE: Redirige para refrescar la lista y mostrar el estado actualizado
+            return "redirect:/tasks"; 
         } catch (RuntimeException e) {
-            System.err.println("LOG ERROR: Error al eliminar tarea con ID " + id + " para el usuario " + username + ": " + e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", "Error al eliminar: " + e.getMessage());
+            System.err.println("LOG ERROR: Error al marcar tarea con ID " + id + " como completada para el usuario " + username + ": " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error al marcar tarea como completada: " + e.getMessage());
+            // También redirige en caso de error para mostrar el mensaje
+            return "redirect:/tasks"; 
+        }
+    }
+
+    // Sección de "Eliminar" Tarea (ahora envía a papelera)
+    // Marca una tarea como inactiva y le asigna una fecha de eliminación.
+    @PostMapping("/tasks/delete/{id}")
+    public String deleteTask(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        System.out.println("LOG: Solicitud para enviar tarea con ID: " + id + " a la papelera.");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User currentUser = userService.buscarEntidadPorUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        try {
+            taskService.enviarTareaAPapelera(id, currentUser); // Llama al nuevo método de soft delete
+            System.out.println("LOG: Tarea con ID " + id + " enviada a la papelera exitosamente por el usuario: " + username);
+            redirectAttributes.addFlashAttribute("successMessage", "¡Tarea enviada a la papelera exitosamente!");
+        } catch (RuntimeException e) {
+            System.err.println("LOG ERROR: Error al enviar tarea con ID " + id + " a la papelera para el usuario " + username + ": " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error al enviar a papelera: " + e.getMessage());
         }
         return "redirect:/tasks";
     }

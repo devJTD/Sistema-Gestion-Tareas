@@ -1,9 +1,9 @@
 package com.freedom.tareas.Model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import java.time.LocalDate;
+
 import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +15,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -62,8 +64,14 @@ public class Task {
     @Column(name = "completion_date")
     private LocalDate completionDate;
 
-    @Column(name = "activeOnPage")
+    // Nuevo campo para manejar la papelera de reciclaje
+    @Column(name = "active_on_page")
     private String activeOnPage;
+
+    // Nuevo campo para registrar la fecha en que la tarea fue enviada a la papelera
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "deleted_at")
+    private LocalDate deletedAt;
 
     public Task(User user, String title, String description, LocalDate dueDate, String priority, String status,
             String activeOnPage) {
@@ -73,6 +81,6 @@ public class Task {
         this.dueDate = dueDate;
         this.priority = priority;
         this.status = status;
-        this.activeOnPage = "on";
+        this.activeOnPage = "on"; // Por defecto, al crear una tarea está activa
     }
 }

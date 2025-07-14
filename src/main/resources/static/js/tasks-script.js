@@ -1,5 +1,10 @@
 // Sección de Preparación de Modales de Tareas
-// Prepara el modal de edición de tareas con los datos proporcionados.
+
+/**
+ * Prepara el modal de edición de tareas con los datos proporcionados.
+ * Se ha ajustado para no mostrar "Completada" en el selector de estado,
+ * ya que ahora hay un botón específico para marcar como completada.
+ */
 function prepareEditTaskFormModal(
     id,
     title,
@@ -15,7 +20,21 @@ function prepareEditTaskFormModal(
     $("#editTaskDescription").val(description);
     $("#editTaskDueDate").val(dueDate);
     $("#editTaskPriority").val(priority);
-    $("#editTaskStatus").val(status);
+
+    // Configurar el select de estado: solo Pendiente y En Proceso
+    var $editTaskStatus = $("#editTaskStatus");
+    $editTaskStatus.empty(); // Limpiar opciones existentes
+    $editTaskStatus.append('<option value="Pendiente">Pendiente</option>');
+    $editTaskStatus.append('<option value="En Proceso">En Proceso</option>');
+
+    // Si la tarea está "Completada", se establecerá en "Pendiente" por defecto en el editor,
+    // ya que la acción de "Completada" debe hacerse a través del botón específico.
+    if (status === 'Completada') {
+        $editTaskStatus.val('Pendiente');
+    } else {
+        $editTaskStatus.val(status);
+    }
+    
     $("#editTaskEtiqueta").val(etiqueta);
 }
 
@@ -25,6 +44,16 @@ function prepareDeleteTaskModal(taskId, taskTitle) {
     var deleteUrl = "/tasks/delete/";
     $("#deleteTaskFormInModal").attr("action", deleteUrl + taskId);
 }
+
+/**
+ * Prepara y muestra el modal de confirmación de tarea completada.
+ */
+function prepareTaskCompletedModal(taskId, taskTitle) {
+    $("#completedTaskTitle").text(taskTitle);
+    $("#confirmCompleteForm").attr("action", "/tasks/complete/" + taskId); // Asegura que el formulario de completar tenga la acción correcta
+    $("#taskCompletedModal").modal('show');
+}
+
 
 // Sección de Rotación de Consejos
 // Función para rotar entre consejos (tips) de manera periódica
@@ -42,8 +71,6 @@ function initializeTipRotation(tipsArray, elementSelector, intervalTime) {
             var initialTip = dataElement.data("current-tip");
 
             // Directamente asume que rawTips es una cadena de texto separada por comas.
-            // Si rawTips es 'undefined' o 'null', String() lo convertirá a "undefined" o "null",
-            // lo cual .split(',') gestionará sin error, resultando en un array con ese string o vacío.
             if (typeof rawTips === 'string' && rawTips.length > 0) {
                 // Split by comma and trim whitespace from each tip
                 tips = rawTips.split(',').map(s => s.trim());
@@ -132,6 +159,8 @@ $(document).ready(function () {
     }
 
     // Maneja el evento de mostrar el modal de edición de tareas.
+    // Esto es un fallback/duplicado de la lógica de prepareEditTaskFormModal.
+    // Podrías considerar eliminar uno si la lógica de `prepareEditTaskFormModal` ya es suficiente en el click.
     $("#editTaskModal").on("show.bs.modal", function (event) {
         var button = $(event.relatedTarget);
         var taskId = button.data("task-id");
@@ -142,14 +171,16 @@ $(document).ready(function () {
         var taskStatus = button.data("task-status");
         var taskEtiqueta = button.data("task-etiqueta");
 
-        var modal = $(this);
-        modal.find("#editTaskId").val(taskId);
-        modal.find("#editTaskTitle").val(taskTitle);
-        modal.find("#editTaskDescription").val(taskDescription);
-        modal.find("#editTaskDueDate").val(taskDueDate);
-        modal.find("#editTaskPriority").val(taskPriority);
-        modal.find("#editTaskStatus").val(taskStatus);
-        modal.find("#editTaskEtiqueta").val(taskEtiqueta);
+        // Reutiliza la función de preparación para mantener la lógica consistente
+        prepareEditTaskFormModal(
+            taskId,
+            taskTitle,
+            taskDescription,
+            taskDueDate,
+            taskPriority,
+            taskStatus,
+            taskEtiqueta
+        );
     });
 
     // Maneja el evento de mostrar el modal de eliminación de tareas.
@@ -158,14 +189,30 @@ $(document).ready(function () {
         var taskId = button.data("task-id");
         var taskTitle = button.data("task-title");
 
-        var modal = $(this);
-        modal.find("#taskTitleToDeleteModal").text(taskTitle);
-        modal
-            .find("#deleteTaskFormInModal")
-            .attr("action", "/tasks/delete/" + taskId);
+        prepareDeleteTaskModal(taskId, taskTitle);
+    });
+
+    // NUEVA LÓGICA: Manejo del clic en el botón "Marcar como Completada"
+    $(".complete-task-btn").on("click", function () {
+        var taskId = $(this).data("task-id");
+        var taskTitle = $(this).data("task-title");
+        prepareTaskCompletedModal(taskId, taskTitle);
+    });
+
+    // Lógica para la descripción "Ver más/Ver menos" (si aplica en tu tasks-style.css)
+    $('.description-toggle').on('click', function () {
+        var $this = $(this);
+        var $toggleText = $this.find('.toggle-text');
+        // Alternar el texto "Ver más" y "Ver menos"
+        if ($this.attr('aria-expanded') === 'true') {
+            $toggleText.text('Ver más');
+        } else {
+            $toggleText.text('Ver menos');
+        }
     });
 
     // Llamada a la inicialización de la rotación de consejos.
+    // Asegúrate de que el elemento `#rotating-tip` exista en tu HTML si lo usas.
     initializeTipRotation([], "#rotating-tip", 10000);
 });
 
@@ -177,6 +224,8 @@ function actualizarImagen() {
     if (url) {
         img.src = url;
     } else {
-        img.src = "[[@{/images/perfilVacio.jpg}]]";
+        // Asegúrate de que esta línea ThymeLeaf se procesa ANTES de que el JS se ejecute en el navegador.
+        // Si este archivo es un .js puro y no es procesado por Thymeleaf, necesitarás una URL relativa.
+        img.src = "/images/perfilVacio.jpg"; 
     }
 }

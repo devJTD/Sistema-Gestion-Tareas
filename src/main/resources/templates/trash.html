@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Papelera de Reciclaje - Freedom Tareas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/tasks-style.css}">
+</head>
+
+<body class="with-fixed-navbar theme-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" th:href="@{/}">
+            <img id="logoA" th:src="@{/images/logo.png}" alt="Logo" height="50" class="d-inline-block align-top mr-2" />
+            <img th:src="@{/images/logoTitulo.png}" alt="Nombre App" height="40" class="d-inline-block align-top" />
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}"
+                        th:classappend="${currentUri == '/' || currentUri == '' ? 'active' : ''}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tasks}"
+                        th:classappend="${#strings.startsWith(currentUri, '/tasks') && !#strings.endsWith(currentUri, '/tasks/add') ? 'active' : ''}">
+                        <i class="fas fa-list-alt"></i> Mis Tareas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tasks/add}"
+                        th:classappend="${#strings.endsWith(currentUri, '/tasks/add') ? 'active' : ''}">
+                        <i class="fas fa-plus-square"></i> Nueva Tarea
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/calendar}"
+                        th:classappend="${#strings.startsWith(currentUri, '/calendar') ? 'active' : ''}">
+                        <i class="fas fa-calendar-alt"></i> Calendario
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/trash}"
+                        th:classappend="${#strings.startsWith(currentUri, '/trash') ? 'active' : ''}">
+                        <i class="fas fa-trash-alt"></i> Papelera
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/archived}"
+                        th:classappend="${#strings.startsWith(currentUri, '/archived') ? 'active' : ''}">
+                        <i class="fas fa-archive"></i> Archivados
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center mr-3">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="theme-toggle" />
+                        <label class="custom-control-label text-light" for="theme-toggle">
+                            <i class="fas fa-sun"></i> / <i class="fas fa-moon"></i>
+                        </label>
+                    </div>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/login}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
+                </li>
+                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdownMenuLink" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img id="profile-image"
+                            th:src="${user.imageUrl != null and user.imageUrl.length() > 0 ? user.imageUrl : '/images/perfilVacio.jpg'}"
+                            alt="Foto de perfil" class="rounded-circle profile-img mr-1" />
+                        <span th:text="${#authentication.principal.username}">Usuario</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdownMenuLink">
+                        <h6 class="dropdown-header" th:text="${#authentication.principal.username}">
+                            Nombre de Usuario
+                        </h6>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" th:href="@{/profile}">
+                            <i class="fas fa-user-circle"></i> Información de Usuario
+                        </a>
+                        <a class="dropdown-item" th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">
+                            <i class="fas fa-cog"></i> Modo Admin
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                        <form th:action="@{/logout}" method="post" id="logout-form" style="display: none">
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-12">
+                <h2><i class="fas fa-trash-alt"></i> Papelera de Reciclaje</h2>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(tasks)}" class="alert alert-info mt-3" role="alert">
+            <i class="fas fa-info-circle"></i> La papelera de reciclaje está vacía.
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(tasks)}">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr id="trA">
+                        <th><i class="fas fa-hashtag"></i> ID</th>
+                        <th><i class="fas fa-heading"></i> Título</th>
+                        <th><i class="fas fa-align-left"></i> Descripción</th>
+                        <th><i class="fas fa-calendar-alt"></i> Fecha Vencimiento</th>
+                        <th><i class="fas fa-exclamation-circle"></i> Prioridad</th>
+                        <th><i class="fas fa-spinner"></i> Estado</th>
+                        <th><i class="fas fa-tag"></i> Etiqueta</th>
+                        <th><i class="fas fa-trash-restore-alt"></i> Eliminado el</th>
+                        <th><i class="fas fa-calendar-times"></i> Días en Papelera</th>
+                        <th><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="task : ${tasks}" th:classappend="
+                                ${task.priority != null ? 'task-priority-' + #strings.toLowerCase(task.priority) : ''} +
+                                ${task.status != null ? ' task-status-' + #strings.toLowerCase(task.status) : ''}
+                            ">
+                        <td th:text="${task.id}">1</td>
+                        <td th:text="${task.title}">Diseñar UI</td>
+                        <td th:text="${task.description}">Crear mockups.</td>
+                        <td th:text="${task.dueDate != null ? #temporals.format(task.dueDate, 'dd-MM-yyyy') : 'N/A'}">
+                            15-05-2025
+                        </td>
+                        <td>
+                            <span th:switch="${task.priority}" class="badge"
+                                th:classappend="${#strings.equalsIgnoreCase(task.priority, 'Alta') ? 'badge-danger' : (#strings.equalsIgnoreCase(task.priority, 'Media') ? 'badge-warning' : 'badge-success')}"
+                                th:text="${task.priority}">Alta</span>
+                        </td>
+                        <td>
+                            <span th:switch="${task.status}" class="badge"
+                                th:classappend="${#strings.equalsIgnoreCase(task.status, 'Pendiente') ? 'badge-secondary' : (#strings.equalsIgnoreCase(task.status, 'En Proceso') ? 'badge-info' : (#strings.equalsIgnoreCase(task.status, 'Completada') ? 'badge-success' : 'badge-light'))}"
+                                th:text="${task.status}">Pendiente</span>
+                        </td>
+                        <td th:text="${task.etiqueta != null && !task.etiqueta.isEmpty() ? task.etiqueta : '-'}">
+                            -
+                        </td>
+                        <td th:text="${task.deletedAt != null ? #temporals.format(task.deletedAt, 'dd-MM-yyyy') : 'N/A'}">
+                            Fecha de Eliminación
+                        </td>
+                        <td>
+                            <span th:if="${task.deletedAt != null}"
+                                th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(task.deletedAt, T(java.time.LocalDate).now())} + ' días'">
+                            </span>
+                            <span th:unless="${task.deletedAt != null}">N/A</span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-success restore-task-btn" data-toggle="modal"
+                                data-target="#restoreTaskModal"
+                                th:attr="data-task-id=${task.id}, data-task-title=${task.title}" title="Restaurar">
+                                <i class="fas fa-undo-alt"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-danger delete-permanent-task-btn"
+                                data-toggle="modal" data-target="#deletePermanentTaskModal"
+                                th:attr="data-task-id=${task.id}, data-task-title=${task.title}"
+                                title="Eliminar Permanentemente">
+                                <i class="fas fa-eraser"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="restoreTaskModal" tabindex="-1" role="dialog" aria-labelledby="restoreTaskModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="restoreTaskModalLabel">
+                        <i class="fas fa-undo-alt text-success"></i> Confirmar Restauración
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas restaurar la tarea: "<strong id="taskTitleToRestoreModal"></strong>"?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <form id="restoreTaskFormInModal" method="post" style="display: inline">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-undo-alt"></i> Restaurar Tarea
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deletePermanentTaskModal" tabindex="-1" role="dialog"
+        aria-labelledby="deletePermanentTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletePermanentTaskModalLabel">
+                        <i class="fas fa-exclamation-triangle text-danger"></i> Eliminar Permanentemente
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¡ADVERTENCIA! Estás a punto de eliminar permanentemente la tarea: "<strong
+                        id="taskTitleToDeletePermanentModal"></strong>". Esta acción **NO SE PUEDE DESHACER**. ¿Estás
+                    absolutamente seguro?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <form id="deletePermanentTaskFormInModal" method="post" style="display: inline">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-eraser"></i> Eliminar Permanentemente
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footerA" class="footer text-white text-center py-3">
+        <div class="container">
+            <span>&copy;
+                <span th:text="${#dates.year(#dates.createNow())}"></span> Sistema de
+                Gestión de Tareas. Todos los derechos reservados.</span>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/themes-script.js}"></script>
+    <script>
+        // Script para manejar los modales de restauración y eliminación permanente
+        $(document).ready(function () {
+            // Modal para Restaurar
+            $('#restoreTaskModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var taskId = button.data('task-id');
+                var taskTitle = button.data('task-title');
+                var modal = $(this);
+                modal.find('#taskTitleToRestoreModal').text(taskTitle);
+                modal.find('#restoreTaskFormInModal').attr('action', '/trash/restore/' + taskId);
+            });
+
+            // Modal para Eliminar Permanentemente
+            $('#deletePermanentTaskModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var taskId = button.data('task-id');
+                var taskTitle = button.data('task-title');
+                var modal = $(this);
+                modal.find('#taskTitleToDeletePermanentModal').text(taskTitle);
+                modal.find('#deletePermanentTaskFormInModal').attr('action', '/trash/delete-permanent/' + taskId);
+            });
+
+            // Lógica para el cierre de sesión
+            document.getElementById('logout-form').addEventListener('submit', function (event) {
+                event.preventDefault(); // Evita el envío predeterminado del formulario
+                // En un entorno de producción real, aquí se podría enviar una solicitud AJAX al backend para un cierre de sesión seguro.
+                // Para este ejemplo, simplemente redirigimos.
+                window.location.href = '/login?logout'; // Redirige a la página de inicio de sesión con mensaje de logout
+            });
+        });
+    </script>
+</body>
+
+</html>

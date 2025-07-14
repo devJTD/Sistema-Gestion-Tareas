@@ -2,6 +2,7 @@ package com.freedom.tareas.Controller;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.freedom.tareas.Model.Task;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Service.TaskService;
@@ -139,19 +141,5 @@ public class AdminController {
         }
     }
 
-    // Elimina una tarea específica de un usuario.
-    @DeleteMapping("/api/users/{idUsuario}/tasks/{idTarea}")
-    @ResponseBody
-    public ResponseEntity<Void> eliminarTareaPorUsuario(@PathVariable Long idUsuario, @PathVariable Long idTarea) {
-        System.out.println("LOG: Solicitud para eliminar tarea con ID " + idTarea + " del usuario con ID: " + idUsuario);
-        boolean eliminado = taskService.eliminarTarea(idUsuario, idTarea);
-        if (eliminado) {
-            System.out.println("LOG: Tarea con ID " + idTarea + " del usuario " + idUsuario + " eliminada exitosamente.");
-            return ResponseEntity.noContent().build();
-        } else {
-            System.err.println("LOG ERROR: Tarea con ID " + idTarea + " del usuario " + idUsuario + " no encontrada para eliminación.");
-            return ResponseEntity.notFound().build();
-        }
-    }
 }
 

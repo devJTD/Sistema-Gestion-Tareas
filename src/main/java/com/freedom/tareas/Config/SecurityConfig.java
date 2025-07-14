@@ -129,26 +129,27 @@ public class SecurityConfig {
                         .requestMatchers("/login/**", "/register/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/authenticate").permitAll()
                         .requestMatchers("/admin", "/admin/**", "/admin/api/**").hasRole("ADMIN")
-                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**").hasAnyRole("USER", "ADMIN")
+                        // Aquí se añadió "/archived/**"
+                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**", "/trash/**", "/archived/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().denyAll())
                 .formLogin(form -> {
                     form.loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .failureUrl("/login?error")
-                        .permitAll();
+                            .loginProcessingUrl("/login")
+                            .failureUrl("/login?error")
+                            .permitAll();
                     System.out.println("LOG: Formulario de login configurado.");
                 })
                 .logout(logout -> {
                     logout.logoutUrl("/logout")
-                          .logoutSuccessUrl("/login?logout")
-                          .invalidateHttpSession(true)
-                          .deleteCookies("JSESSIONID")
-                          .permitAll();
+                            .logoutSuccessUrl("/login?logout")
+                            .invalidateHttpSession(true)
+                            .deleteCookies("JSESSIONID")
+                            .permitAll();
                     System.out.println("LOG: Funcionalidad de cierre de sesión configurada.");
                 })
                 .exceptionHandling(exceptions -> {
                     exceptions.accessDeniedHandler(accessDeniedHandler())
-                              .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
+                            .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
                     System.out.println("LOG: Manejo de excepciones (acceso denegado y punto de entrada) configurado.");
                 });
 
