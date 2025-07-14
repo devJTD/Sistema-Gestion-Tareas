@@ -27,12 +27,47 @@ function prepareDeleteTaskModal(taskId, taskTitle) {
 }
 
 // Sección de Rotación de Consejos
-// Inicializa la rotación de consejos en un elemento HTML dado un array de consejos y un intervalo.
+// Función para rotar entre consejos (tips) de manera periódica
 function initializeTipRotation(tipsArray, elementSelector, intervalTime) {
     $(document).ready(function () {
-        var tips = tipsArray;
+        var tips = []; // Inicializamos tips como un array vacío
         var tipElement = $(elementSelector);
         var currentTipIndex = 0;
+
+        // ***** Lógica MODIFICADA para obtener tips de data-attributes *****
+        try {
+            var dataElement = $("#data-for-js");
+            // Obtener el string de consejos del atributo data-all-tips
+            var rawTips = dataElement.data("all-tips"); 
+            var initialTip = dataElement.data("current-tip");
+
+            // Directamente asume que rawTips es una cadena de texto separada por comas.
+            // Si rawTips es 'undefined' o 'null', String() lo convertirá a "undefined" o "null",
+            // lo cual .split(',') gestionará sin error, resultando en un array con ese string o vacío.
+            if (typeof rawTips === 'string' && rawTips.length > 0) {
+                // Split by comma and trim whitespace from each tip
+                tips = rawTips.split(',').map(s => s.trim());
+            } else {
+                tips = []; // Si rawTips no es una cadena válida o está vacía, el array de tips estará vacío
+            }
+            
+            // Establecer el consejo inicial si está disponible y el elemento existe
+            if (tipElement.length > 0 && initialTip) {
+                tipElement.text(initialTip);
+            }
+
+        } catch (e) {
+            console.error("Error al obtener o procesar los consejos del atributo data-:", e);
+            tips = []; // Asegura que tips sea un array vacío si hay un error crítico
+        }
+        // ***** FIN Lógica MODIFICADA *****
+
+        // --- DEBUGGING: Revisa la consola para ver qué consejos se están cargando ---
+        console.log("DEBUG: Consejos obtenidos (final) en JS:", tips);
+        console.log("DEBUG: Número de consejos:", tips.length);
+        console.log("DEBUG: Elemento del tip encontrado:", tipElement.length > 0);
+        console.log("DEBUG: Contenido inicial de rotating-tip:", tipElement.text().trim());
+        // --- FIN DEBUGGING ---
 
         if (tipElement.length > 0 && tips && tips.length > 0) {
             var initialTipText = tipElement.text().trim();
@@ -53,7 +88,7 @@ function initializeTipRotation(tipsArray, elementSelector, intervalTime) {
                     currentTipIndex = (currentTipIndex + 1) % tips.length;
                 }, intervalTime);
             } else {
-                tipElement.text(initialTipText);
+                tipElement.text(tips[0]); // Si solo hay un consejo, muestra el primero
             }
         } else if (tipElement.length > 0) {
             tipElement.text("No hay consejos para mostrar.");
@@ -130,9 +165,8 @@ $(document).ready(function () {
             .attr("action", "/tasks/delete/" + taskId);
     });
 
-    // Obtiene los consejos de Thymeleaf y los usa para inicializar la rotación.
-    var allTipsFromThymeleaf = /*[[${allTips}]]*/ [];
-    initializeTipRotation(allTipsFromThymeleaf, "#rotating-tip", 10000);
+    // Llamada a la inicialización de la rotación de consejos.
+    initializeTipRotation([], "#rotating-tip", 10000);
 });
 
 // Sección de Actualización de Imagen de Perfil
