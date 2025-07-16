@@ -24,30 +24,22 @@ import com.freedom.tareas.Repository.UserRepository;
 @Service
 public class UserService implements UserDetailsService {
 
+    // Inyección de dependencias para repositorios y codificador de contraseñas.
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TaskRepository taskRepository;
 
+    // Constructor que permite a Spring inyectar las dependencias necesarias.
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TaskRepository taskRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.taskRepository = taskRepository;
     }
 
-    /**
-     * Crea un nuevo usuario en la base de datos.
-     * Asigna el rol por defecto (USER) y codifica la contraseña.
-     * Realiza comprobaciones de existencia de username/email.
-     *
-     * @param usuario El objeto User a crear.
-     * @return true si el usuario fue creado exitosamente, false si ya existe un
-     *         usuario con el mismo username o email.
-     */
+    // Crea un nuevo usuario, asigna rol "USER" y codifica la contraseña.
+    // Retorna true si se crea, false si el usuario o email ya existen.
     public boolean crearUsuario(User usuario) {
         System.out.println("LOG: Intentando crear nuevo usuario: " + usuario.getUsername());
-        // Comprobaciones de existencia (pueden ser redundantes si el controlador ya las
-        // hace,
-        // pero es una buena práctica tenerlas también en el servicio para robustez)
         if (userRepository.existsByUsername(usuario.getUsername())) {
             System.out.println("LOG: Intento de crear usuario con username existente: " + usuario.getUsername());
             return false;
@@ -57,9 +49,8 @@ public class UserService implements UserDetailsService {
             return false;
         }
 
-        // ¡IMPORTANTE! Asignar el rol aquí antes de guardar
-        usuario.setRole(Role.USER);
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        usuario.setRole(Role.USER); // Asigna el rol por defecto.
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword())); // Codifica la contraseña.
 
         try {
             userRepository.save(usuario);
@@ -69,12 +60,11 @@ public class UserService implements UserDetailsService {
         } catch (Exception e) {
             System.err
                     .println("LOG ERROR: Error al guardar usuario '" + usuario.getUsername() + "': " + e.getMessage());
-            // Consider logging the stack trace using a logger in production environments
             return false;
         }
     }
 
-    // guardarUsuario
+    // Guarda un usuario existente o nuevo.
     public User guardarUsuario(User user) {
         System.out.println("LOG: Guardando usuario (método genérico): " + user.getUsername());
         User savedUser = userRepository.save(user);
@@ -83,30 +73,29 @@ public class UserService implements UserDetailsService {
         return savedUser;
     }
 
-    // eliminarUsuario
+    // Elimina un usuario de forma permanente por su ID.
     public void eliminarUsuario(Long id) {
         System.out.println("LOG: Eliminando usuario físicamente por ID: " + id);
         userRepository.deleteById(id);
         System.out.println("LOG: Usuario ID " + id + " eliminado físicamente.");
     }
 
-    // eliminarUsuarioYSusTareas
+    // Elimina un usuario y todas sus tareas asociadas dentro de una transacción.
     @Transactional
     public void eliminarUsuarioYSusTareas(Long userId) {
         System.out.println("LOG: Intentando eliminar usuario con ID: " + userId + " y sus tareas.");
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {
-            taskRepository.deleteByUserId(userId);
-            System.out.println("LOG: Tareas eliminadas para el usuario ID: " + userId);
-            userRepository.deleteById(userId);
-            System.out.println("LOG: Usuario ID " + userId + " eliminado exitosamente.");
+            taskRepository.deleteByUserId(userId); // Elimina todas las tareas del usuario.
+            userRepository.deleteById(userId); // Luego elimina al usuario.
+            System.out.println("LOG: Usuario ID " + userId + " y sus tareas eliminados exitosamente.");
         } else {
             System.err.println("LOG ERROR: Usuario con ID " + userId + " no encontrado para eliminación.");
             throw new UserNotFoundException("Usuario con ID " + userId + " no encontrado para eliminación.");
         }
     }
 
-    // loadUserByUsername
+    // Carga los detalles del usuario por su nombre de usuario para Spring Security.
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println("LOG: Intentando cargar UserDetails para el usuario: " + username);
@@ -118,7 +107,7 @@ public class UserService implements UserDetailsService {
                 });
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name()));
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name())); // Asigna el rol al UserDetails.
         System.out.println("LOG: UserDetails cargados para '" + username + "' con rol: " + usuario.getRole().name());
 
         UserBuilder builder = org.springframework.security.core.userdetails.User.withUsername(usuario.getUsername());
@@ -128,7 +117,7 @@ public class UserService implements UserDetailsService {
         return builder.build();
     }
 
-    // asignarRolAdmin
+    // Asigna el rol de ADMINISTRADOR a un usuario específico.
     @Transactional
     public void asignarRolAdmin(Long userId) {
         System.out.println("LOG: Intentando asignar rol ADMIN a usuario con ID: " + userId);
@@ -148,12 +137,12 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("El usuario con ID " + userId + " ya tiene el rol de ADMIN.");
         }
 
-        user.setRole(Role.ADMIN);
-        userRepository.save(user);
+        user.setRole(Role.ADMIN); // Cambia el rol a ADMIN.
+        userRepository.save(user); // Guarda el cambio en la base de datos.
         System.out.println("LOG: Rol ADMIN asignado a usuario con ID " + userId + " exitosamente.");
     }
 
-    // Métodos para obtener y actualizar el usuario logeado
+    // Obtiene el usuario autenticado actualmente en el sistema.
     @Transactional(readOnly = true)
     public User getCurrentAuthenticatedUser() {
         System.out.println("LOG: Obteniendo usuario autenticado actual.");
@@ -174,7 +163,7 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    // En UserService.java
+    // Actualiza el perfil de un usuario, incluyendo validaciones y cambio de contraseña.
     @Transactional
     public User updateProfile(User userDetails, String newPassword) {
         System.out.println("LOG: Intentando actualizar perfil del usuario con ID: " + userDetails.getId());
@@ -185,10 +174,7 @@ public class UserService implements UserDetailsService {
                     return new UserNotFoundException("Usuario no encontrado con ID: " + userDetails.getId());
                 });
 
-        // Validaciones para username y email (opcional, pero muy recomendable)
-        // Antes de actualizar, verifica si el nuevo username o email ya existen para
-        // otro usuario.
-        // Esto es crucial para evitar duplicados y errores en la base de datos.
+        // Validaciones para evitar duplicados de username o email.
         if (!existingUser.getUsername().equals(userDetails.getUsername())
                 && userRepository.existsByUsername(userDetails.getUsername())) {
             throw new IllegalArgumentException(
@@ -200,9 +186,9 @@ public class UserService implements UserDetailsService {
                     "El correo electrónico '" + userDetails.getEmail() + "' ya está en uso.");
         }
 
-        // Actualiza los campos que se permiten cambiar
-        existingUser.setUsername(userDetails.getUsername()); // ¡¡¡AÑADE ESTA LÍNEA!!!
-        existingUser.setEmail(userDetails.getEmail()); // ¡¡¡ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ!!!
+        // Actualiza los campos permitidos del perfil.
+        existingUser.setUsername(userDetails.getUsername()); 
+        existingUser.setEmail(userDetails.getEmail()); 
         existingUser.setImageUrl(userDetails.getImageUrl());
         existingUser.setAge(userDetails.getAge());
         existingUser.setBirthDate(userDetails.getBirthDate());
@@ -210,54 +196,41 @@ public class UserService implements UserDetailsService {
         System.out.println("LOG: Campos de perfil actualizados en memoria para usuario ID: " + existingUser.getId());
 
         if (newPassword != null && !newPassword.isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(newPassword));
+            existingUser.setPassword(passwordEncoder.encode(newPassword)); // Codifica y actualiza la nueva contraseña.
             System.out.println("LOG: Contraseña actualizada para usuario ID: " + existingUser.getId());
         }
 
-        // Guardar los cambios
-        User updatedUser = userRepository.save(existingUser);
+        User updatedUser = userRepository.save(existingUser); // Guarda los cambios en la base de datos.
         System.out.println("LOG: Perfil de usuario ID " + updatedUser.getId() + " guardado en la base de datos.");
         return updatedUser;
     }
     // ---------------------------------------------------------------------
 
-    // buscarUsuarioPorId
+    // Busca un usuario por su ID.
     public Optional<User> buscarUsuarioPorId(Long id) {
         System.out.println("LOG: Buscando usuario por ID: " + id);
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            System.out.println("LOG: Usuario ID " + id + " encontrado.");
-        } else {
-            System.out.println("LOG: Usuario ID " + id + " no encontrado.");
-        }
+        System.out.println("LOG: Usuario ID " + id + (user.isPresent() ? " encontrado." : " no encontrado."));
         return user;
     }
 
-    // buscarUsuarioPorUsername
+    // Busca la entidad de usuario por su nombre de usuario.
     public Optional<User> buscarEntidadPorUsername(String username) {
         System.out.println("LOG: Buscando entidad de usuario por username: " + username);
         Optional<User> user = userRepository.findByUsername(username);
-        if (user.isPresent()) {
-            System.out.println("LOG: Entidad de usuario '" + username + "' encontrada.");
-        } else {
-            System.out.println("LOG: Entidad de usuario '" + username + "' no encontrada.");
-        }
+        System.out.println("LOG: Entidad de usuario '" + username + "'" + (user.isPresent() ? " encontrada." : " no encontrada."));
         return user;
     }
 
-    // buscarPorEmail
+    // Busca un usuario por su dirección de correo electrónico.
     public Optional<User> buscarPorEmail(String email) {
         System.out.println("LOG: Buscando usuario por email: " + email);
         Optional<User> user = userRepository.findByEmail(email);
-        if (user.isPresent()) {
-            System.out.println("LOG: Usuario con email '" + email + "' encontrado.");
-        } else {
-            System.out.println("LOG: Usuario con email '" + email + "' no encontrado.");
-        }
+        System.out.println("LOG: Usuario con email '" + email + "'" + (user.isPresent() ? " encontrado." : " no encontrado."));
         return user;
     }
 
-    // buscarTodosLosUsuarios
+    // Recupera una lista de todos los usuarios registrados.
     public List<User> buscarTodosLosUsuarios() {
         System.out.println("LOG: Buscando todos los usuarios.");
         List<User> users = userRepository.findAll();
@@ -265,6 +238,7 @@ public class UserService implements UserDetailsService {
         return users;
     }
 
+    // Clase de excepción personalizada para cuando un usuario no es encontrado.
     public static class UserNotFoundException extends RuntimeException {
         public UserNotFoundException(String message) {
             super(message);

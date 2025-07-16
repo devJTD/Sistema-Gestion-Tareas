@@ -1,36 +1,4 @@
 $(document).ready(function() {
-    // Sección de Utilidades de Formato
-    // Formatea una cadena de fecha a un formato legible en español.
-    function formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString + 'T00:00:00');
-        if (isNaN(date.getTime())) {
-            return 'Fecha inválida';
-        }
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return date.toLocaleDateString('es-ES', options);
-    }
-
-    // Normaliza una cadena de texto a formato de título (primera letra mayúscula).
-    function normalizeCase(str) {
-        if (!str) return '';
-        return str.replace(/_/g, ' ')
-                   .toLowerCase()
-                   .split(' ')
-                   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                   .join(' ');
-    }
-
-    // Sección de Tokens CSRF (Mantenemos las funciones, pero no las usaremos si CSRF está deshabilitado)
-    function getCsrfToken() {
-        return $("meta[name='_csrf']").attr("content");
-    }
-
-    function getCsrfHeader() {
-        return $("meta[name='_csrf_header']").attr("content");
-    }
-
-    // Sección de Modales de Mensaje
     function showMessageModal(message, isError = false) {
         const modalBody = $('#messageModalBody');
         modalBody.html(`<p>${message}</p>`);
@@ -42,7 +10,6 @@ $(document).ready(function() {
         $('#messageModal').modal('show');
     }
 
-    // Sección de Carga de Usuarios
     function loadUsers() {
         console.log("JS LOG: Cargando usuarios...");
         $.ajax({
@@ -68,7 +35,6 @@ $(document).ready(function() {
         });
     }
 
-    // Sección de Recarga de Tareas de Usuario
     function reloadUserTasks(userId) {
         console.log("JS LOG: Recargando tareas para el usuario ID:", userId);
         if (!userId) {
@@ -86,43 +52,18 @@ $(document).ready(function() {
                 $('#userTasksList').empty();
                 if (tasks.length > 0) {
                     tasks.forEach(function(task) {
-                        const displayPriority = normalizeCase(task.priority);
-                        const displayStatus = normalizeCase(task.status);
-                        let statusBadgeClass = '';
-                        switch(displayStatus) {
-                            case 'Pendiente': statusBadgeClass = 'badge-warning'; break;
-                            case 'En Proceso': statusBadgeClass = 'badge-info'; break;
-                            case 'Completada': statusBadgeClass = 'badge-success'; break;
-                            default: statusBadgeClass = 'badge-secondary';
-                        }
-                        const tagsHtml = task.etiqueta ? `<span class="badge badge-info"><i class="fas fa-tag"></i> Etiquetas: ${task.etiqueta}</span>` : '';
+                        // Solo muestra la información de la tarea, sin botones de edición/eliminación
                         const taskItemHtml = `
                             <li class="list-group-item task-item">
                                 <h5 class="task-title">
                                     ${task.title}
-                                    <span class="badge ${statusBadgeClass} task-status">${displayStatus}</span>
+                                    <span class="badge ${getStatusBadgeClass(task.status)} task-status">${normalizeCase(task.status)}</span>
                                 </h5>
                                 <p class="task-description">${task.description || 'Sin descripción.'}</p>
                                 <div class="task-details">
                                     <span class="badge badge-secondary mr-2"><i class="far fa-calendar-alt"></i> Vence: ${formatDate(task.dueDate)}</span>
-                                    <span class="badge badge-primary mr-2"><i class="fas fa-exclamation-triangle"></i> Prioridad: ${displayPriority || 'N/A'}</span>
-                                    ${tagsHtml}
-                                </div>
-                                <div class="task-actions mt-2">
-                                    <button class="btn btn-sm btn-outline-warning edit-task-btn"
-                                        data-task-id="${task.id}"
-                                        data-task-title="${task.title}"
-                                        data-task-description="${task.description || ''}"
-                                        data-task-duedate="${task.dueDate || ''}"
-                                        data-task-priority="${displayPriority || ''}"
-                                        data-task-status="${displayStatus || ''}"
-                                        data-task-etiqueta="${task.etiqueta || ''}"
-                                        data-toggle="modal" data-target="#editTaskModal">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger delete-task-btn" data-task-id="${task.id}" data-toggle="modal" data-target="#confirmDeleteModal">
-                                        <i class="fas fa-trash-alt"></i> Eliminar
-                                    </button>
+                                    <span class="badge badge-primary mr-2"><i class="fas fa-exclamation-triangle"></i> Prioridad: ${normalizeCase(task.priority) || 'N/A'}</span>
+                                    ${task.etiqueta ? `<span class="badge badge-info"><i class="fas fa-tag"></i> Etiquetas: ${task.etiqueta}</span>` : ''}
                                 </div>
                             </li>
                         `;
@@ -140,10 +81,37 @@ $(document).ready(function() {
         });
     }
 
-    // Sección de Inicialización
+    // Funciones auxiliares para formato que aún se necesitan para mostrar las tareas
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString + 'T00:00:00');
+        if (isNaN(date.getTime())) {
+            return 'Fecha inválida';
+        }
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('es-ES', options);
+    }
+
+    function normalizeCase(str) {
+        if (!str) return '';
+        return str.replace(/_/g, ' ')
+                  .toLowerCase()
+                  .split(' ')
+                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(' ');
+    }
+
+    function getStatusBadgeClass(status) {
+        switch(normalizeCase(status)) {
+            case 'Pendiente': return 'badge-warning';
+            case 'En Proceso': return 'badge-info';
+            case 'Completada': return 'badge-success';
+            default: return 'badge-secondary';
+        }
+    }
+
     loadUsers();
 
-    // Sección de Eventos de Selección de Usuario
     $('#userSelect').change(function() {
         const userId = $(this).val();
         console.log("JS LOG: Usuario seleccionado, ID:", userId);
@@ -192,7 +160,6 @@ $(document).ready(function() {
         }
     });
 
-    // Sección de Asignación de Rol de Administrador
     $('#confirmAssignAdminModal').on('show.bs.modal', function(event) {
         const userId = $('#userSelect').val();
         const username = $('#userSelect option:selected').text();
@@ -217,9 +184,9 @@ $(document).ready(function() {
                 console.log("JS LOG: Rol ADMIN asignado exitosamente a usuario ID:", userId);
                 showMessageModal(`El usuario "${username}" ahora tiene el rol de ADMIN.`, false);
                 $('#confirmAssignAdminModal').modal('hide');
-                $('#userSelect').val(''); // Deselecciona el usuario
-                $('#userSelect').change(); // Dispara el cambio para actualizar la UI y deshabilitar botones
-                loadUsers(); // Recarga la lista de usuarios para actualizar roles en el select
+                $('#userSelect').val('');
+                $('#userSelect').change();
+                loadUsers();
             },
             error: function(xhr, status, error) {
                 console.error('JS ERROR: Error al asignar rol de administrador:', error, xhr.responseText);
@@ -228,8 +195,6 @@ $(document).ready(function() {
         });
     });
 
-    // Sección de Eliminación de Usuario
-    // Manejador explícito para el botón de eliminar usuario
     $('#deleteUserBtn').click(function() {
         const userId = $('#userSelect').val();
         const username = $('#userSelect option:selected').text();
@@ -241,7 +206,6 @@ $(document).ready(function() {
             return;
         }
 
-        // Rellenar el modal de confirmación y mostrarlo manualmente
         $('#userToDeleteUsername').text(username);
         $('#deleteUserId').val(userId);
         $('#confirmDeleteUserModal').modal('show');
@@ -249,7 +213,6 @@ $(document).ready(function() {
     });
 
 
-    // Envía la solicitud para eliminar un usuario.
     $('#confirmDeleteUserButton').click(function() {
         const userId = $('#deleteUserId').val();
         const username = $('#userToDeleteUsername').text();
@@ -267,9 +230,9 @@ $(document).ready(function() {
                 console.log("JS LOG: Usuario ID " + userId + " eliminado exitosamente.");
                 showMessageModal(`El usuario "${username}" ha sido eliminado exitosamente.`, false);
                 $('#confirmDeleteUserModal').modal('hide');
-                $('#userSelect').val(''); // Limpia la selección del usuario
-                $('#userSelect').change(); // Dispara el evento change para ocultar secciones y recargar
-                loadUsers(); // Recarga la lista de usuarios en el select
+                $('#userSelect').val('');
+                $('#userSelect').change();
+                loadUsers();
             },
             error: function(xhr, status, error) {
                 console.error('JS ERROR: Error al eliminar usuario:', error, xhr.responseText);
@@ -282,100 +245,6 @@ $(document).ready(function() {
                     errorMessage += ': ' + error;
                 }
                 showMessageModal(errorMessage, true);
-            }
-        });
-    });
-
-    // Sección de Edición de Tareas (en modal)
-    $(document).on('click', '.edit-task-btn', function() {
-        const taskId = $(this).data('task-id');
-        const taskTitle = $(this).data('task-title');
-        const taskDescription = $(this).data('task-description');
-        const taskDueDate = $(this).data('task-duedate');
-        const taskPriority = $(this).data('task-priority');
-        const taskStatus = $(this).data('task-status');
-        const taskEtiqueta = $(this).data('task-etiqueta');
-        console.log("JS LOG: Preparando modal para editar tarea ID:", taskId);
-        $('#editTaskId').val(taskId);
-        $('#editTaskTitle').val(taskTitle);
-        $('#editTaskDescription').val(taskDescription || '');
-        $('#editTaskDueDate').val(taskDueDate);
-        $('#editTaskPriority').val(taskPriority);
-        $('#editTaskStatus').val(taskStatus);
-        if ($('#editTaskEtiqueta').length) {
-            $('#editTaskEtiqueta').val(taskEtiqueta || '');
-        }
-    });
-
-    $('#saveTaskChanges').click(function() {
-        const taskId = $('#editTaskId').val();
-        const userId = $('#userSelect').val();
-        const updatedTask = {
-            title: $('#editTaskTitle').val(),
-            description: $('#editTaskDescription').val(),
-            dueDate: $('#editTaskDueDate').val(),
-            priority: $('#editTaskPriority').val(),
-            status: $('#editTaskStatus').val(),
-            etiqueta: $('#editTaskEtiqueta').val()
-        };
-        console.log("JS LOG: Enviando solicitud para guardar cambios de tarea ID:", taskId, "para usuario ID:", userId, "Datos:", updatedTask);
-
-        if (!updatedTask.title || !updatedTask.dueDate || !updatedTask.priority || !updatedTask.status) {
-            showMessageModal('Por favor, completa todos los campos obligatorios: Título, Fecha de Vencimiento, Prioridad y Estado.', true);
-            return;
-        }
-        $.ajax({
-            url: `/admin/api/users/${userId}/tasks/${taskId}`,
-            method: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify(updatedTask),
-            success: function() {
-                console.log("JS LOG: Tarea ID " + taskId + " actualizada exitosamente.");
-                showMessageModal('Tarea actualizada exitosamente.', false);
-                $('#editTaskModal').modal('hide');
-                reloadUserTasks(userId);
-            },
-            error: function(xhr, status, error) {
-                console.error('JS ERROR: Error al actualizar la tarea:', error, xhr.responseText);
-                showMessageModal('Error al actualizar la tarea: ' + (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : xhr.responseText || error), true);
-            }
-        });
-    });
-
-    // Sección de Eliminación de Tareas (en modal)
-    $(document).on('click', '.delete-task-btn', function() {
-        const taskId = $(this).data('task-id');
-        console.log("JS LOG: Preparando modal para eliminar tarea ID:", taskId);
-        $('#deleteTaskId').val(taskId);
-    });
-
-    $('#confirmDeleteButton').click(function() {
-        const taskId = $('#deleteTaskId').val();
-        const userId = $('#userSelect').val();
-        console.log("JS LOG: Enviando solicitud para eliminar tarea ID:", taskId, "para usuario ID:", userId);
-
-        if (!taskId || !userId) {
-            console.error("JS ERROR: ID de tarea o usuario para eliminar es nulo o vacío.");
-            showMessageModal('Error: No se pudo obtener el ID de la tarea o del usuario para eliminar.', true);
-            return;
-        }
-        $.ajax({
-            url: `/admin/api/users/${userId}/tasks/${taskId}`,
-            method: 'DELETE',
-            contentType: 'application/json',
-            success: function() {
-                console.log("JS LOG: Tarea ID " + taskId + " eliminada exitosamente.");
-                showMessageModal('Tarea eliminada exitosamente.', false);
-                $('#confirmDeleteModal').modal('hide');
-                reloadUserTasks(userId);
-            },
-            error: function(xhr, status, error) {
-                console.error('JS ERROR: Error al eliminar la tarea:', error, xhr.responseText);
-                if (xhr.status === 403) {
-                    showMessageModal('No tienes permisos para eliminar esta tarea.', true);
-                } else {
-                    showMessageModal('Error al eliminar la tarea: ' + (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : xhr.responseText || error), true);
-                }
             }
         });
     });

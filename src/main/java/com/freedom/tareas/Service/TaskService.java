@@ -6,25 +6,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.freedom.tareas.Model.Task;
 import com.freedom.tareas.Model.User;
 import com.freedom.tareas.Repository.TaskRepository;
-import com.freedom.tareas.Repository.UserRepository;
 
 import jakarta.validation.Valid;
 
 @Service
 public class TaskService {
 
+    // Inyecta el repositorio de tareas para la interacción con la base de datos.
     private final TaskRepository taskRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    // Constructor que permite a Spring inyectar TaskRepository.
+    public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
+    // Crea una nueva tarea, asegurándose de que esté asociada a un usuario.
     @Transactional
     public Task crearTarea(@Valid Task tarea) {
         System.out.println("LOG: Intentando crear tarea: '" + tarea.getTitle() + "' para usuario ID: " + (tarea.getUser() != null ? tarea.getUser().getId() : "N/A"));
@@ -32,40 +35,36 @@ public class TaskService {
             System.err.println("LOG ERROR: Fallo al crear tarea: la tarea no está asociada a un usuario.");
             throw new IllegalArgumentException("La tarea debe estar asociada a un usuario.");
         }
-        if ("Completada".equalsIgnoreCase(tarea.getStatus()) && tarea.getCompletionDate() == null) {
-            tarea.setCompletionDate(LocalDate.now());
-            System.out.println("LOG: Fecha de completado establecida para la tarea ID: " + tarea.getId());
-        }
-        if (tarea.getActiveOnPage() == null || tarea.getActiveOnPage().isEmpty()) {
+        if (tarea.getActiveOnPage() == null || tarea.getActiveOnPage().isEmpty() || "off".equalsIgnoreCase(tarea.getActiveOnPage())) {
             tarea.setActiveOnPage("on");
             System.out.println("LOG: activeOnPage establecido a 'on' para la tarea ID: " + tarea.getId());
         }
+        tarea.setDeletedAt(null);
         Task savedTask = taskRepository.save(tarea);
         System.out.println("LOG: Tarea creada y guardada exitosamente con ID: " + savedTask.getId());
         return savedTask;
     }
 
+    // Obtiene todas las tareas activas ("on") de un usuario específico.
     @Transactional(readOnly = true)
     public List<Task> obtenerTareasPorUsuario(User usuario) {
-        System.out.println("LOG: Obteniendo tareas activas para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        System.out.println("LOG: Obteniendo todas las tareas (incluyendo completadas) para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
         List<Task> tasks = taskRepository.findByUserAndActiveOnPage(usuario, "on");
-        System.out.println("LOG: Se encontraron " + tasks.size() + " tareas activas para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        System.out.println("LOG: Se encontraron " + tasks.size() + " tareas activas (incluyendo completadas) para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
         return tasks;
     }
 
+    // Busca una tarea por su ID y el usuario, filtrando solo las que estén activas.
     @Transactional(readOnly = true)
     public Optional<Task> obtenerTareaPorIdYUsuario(Long id, User usuario) {
         System.out.println("LOG: Buscando tarea con ID: " + id + " para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
         Optional<Task> task = taskRepository.findByIdAndUser(id, usuario)
                 .filter(t -> "on".equalsIgnoreCase(t.getActiveOnPage()));
-        if (task.isPresent()) {
-            System.out.println("LOG: Tarea ID " + id + " encontrada y activa para el usuario.");
-        } else {
-            System.out.println("LOG: Tarea ID " + id + " no encontrada o inactiva para el usuario.");
-        }
+        System.out.println("LOG: Tarea ID " + id + (task.isPresent() ? " encontrada y activa." : " no encontrada o inactiva.") + " para el usuario.");
         return task;
     }
 
+    // Actualiza los detalles de una tarea específica para un usuario.
     @Transactional
     public Task actualizarTareaPorUsuario(Long id, @Valid Task tareaActualizada, User usuario) {
         System.out.println("LOG: Intentando actualizar tarea con ID: " + id + " para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
@@ -73,9 +72,9 @@ public class TaskService {
 
         if (tareaEncontrada.isPresent()) {
             Task tarea = tareaEncontrada.get();
-            String estadoAnterior = tarea.getStatus();
-            System.out.println("LOG: Tarea ID " + id + " encontrada. Estado anterior: " + estadoAnterior);
+            System.out.println("LOG: Tarea ID " + id + " encontrada.");
 
+            // Actualiza los campos de la tarea.
             tarea.setTitle(tareaActualizada.getTitle());
             tarea.setDescription(tareaActualizada.getDescription());
             tarea.setDueDate(tareaActualizada.getDueDate());
@@ -83,14 +82,6 @@ public class TaskService {
             tarea.setStatus(tareaActualizada.getStatus());
             tarea.setEtiqueta(tareaActualizada.getEtiqueta());
             System.out.println("LOG: Datos de tarea ID " + id + " actualizados en memoria.");
-
-            if ("Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && !"Completada".equalsIgnoreCase(estadoAnterior)) {
-                tarea.setCompletionDate(LocalDate.now());
-                System.out.println("LOG: Tarea ID " + id + " marcada como completada. Fecha de completado establecida.");
-            } else if (!"Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && "Completada".equalsIgnoreCase(estadoAnterior)) {
-                tarea.setCompletionDate(null);
-                System.out.println("LOG: Tarea ID " + id + " desmarcada como completada. Fecha de completado eliminada.");
-            }
 
             Task updatedTask = taskRepository.save(tarea);
             System.out.println("LOG: Tarea ID " + id + " guardada en la base de datos.");
@@ -101,20 +92,86 @@ public class TaskService {
         }
     }
 
+    // Marca una tarea como completada y registra la fecha actual.
     @Transactional
-    public void eliminarTareaPorUsuario(Long id, User usuario) {
-        System.out.println("LOG: Intentando 'desactivar' tarea con ID: " + id + " para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+    public Task marcarTareaComoCompletada(Long id, User usuario) {
+        System.out.println("LOG: Intentando marcar tarea con ID: " + id + " como completada para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
+
+        if (tareaEncontrada.isEmpty()) {
+            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para marcar como completada.");
+            throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
+        }
+
+        Task tarea = tareaEncontrada.get();
+        if (!"Completada".equalsIgnoreCase(tarea.getStatus())) {
+            tarea.setStatus("Completada");
+            tarea.setCompletionDate(LocalDate.now()); // Establece la fecha de finalización.
+            System.out.println("LOG: Tarea ID " + id + " marcada como 'Completada'. Fecha de completado establecida.");
+        } else {
+            System.out.println("LOG: Tarea ID " + id + " ya estaba completada. No se realizó ningún cambio.");
+        }
+        
+        Task updatedTask = taskRepository.save(tarea);
+        return updatedTask;
+    }
+
+    // Mueve una tarea a la "papelera" estableciendo 'activeOnPage' a "off" y 'deletedAt' a la fecha actual.
+    @Transactional
+    public void enviarTareaAPapelera(Long id, User usuario) {
+        System.out.println("LOG: Intentando enviar tarea con ID: " + id + " a la papelera para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
         Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
         if (tareaEncontrada.isEmpty()) {
-            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para 'desactivación'.");
+            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para enviar a papelera.");
             throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
         }
         Task tarea = tareaEncontrada.get();
-        tarea.setActiveOnPage("off");
+        tarea.setActiveOnPage("off"); // Marca como inactiva.
+        tarea.setDeletedAt(LocalDate.now()); // Registra la fecha de eliminación.
         taskRepository.save(tarea);
-        System.out.println("LOG: Tarea ID " + id + " marcada como inactiva para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        System.out.println("LOG: Tarea ID " + id + " enviada a la papelera para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
     }
 
+    // Restaura una tarea de la papelera, volviendo 'activeOnPage' a "on" y 'deletedAt' a null.
+    @Transactional
+    public Task restaurarTarea(Long id, User usuario) {
+        System.out.println("LOG: Intentando restaurar tarea con ID: " + id + " para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
+        if (tareaEncontrada.isEmpty()) {
+            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para restaurar.");
+            throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
+        }
+        Task tarea = tareaEncontrada.get();
+        tarea.setActiveOnPage("on"); // Marca como activa.
+        tarea.setDeletedAt(null); // Borra la fecha de eliminación.
+        Task restoredTask = taskRepository.save(tarea);
+        System.out.println("LOG: Tarea ID " + id + " restaurada exitosamente para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        return restoredTask;
+    }
+
+    // Elimina una tarea de forma permanente de la base de datos.
+    @Transactional
+    public void eliminarTareaPermanentemente(Long id, User usuario) {
+        System.out.println("LOG: Intentando eliminar permanentemente tarea con ID: " + id + " para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
+        if (tareaEncontrada.isEmpty()) {
+            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para eliminación permanente.");
+            throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
+        }
+        taskRepository.delete(tareaEncontrada.get());
+        System.out.println("LOG: Tarea ID " + id + " eliminada permanentemente para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+    }
+
+    // Obtiene todas las tareas que están en la papelera para un usuario específico.
+    @Transactional(readOnly = true)
+    public List<Task> obtenerTareasEnPapelera(User usuario) {
+        System.out.println("LOG: Obteniendo tareas en papelera para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        List<Task> tasks = taskRepository.findByUserAndActiveOnPage(usuario, "off");
+        System.out.println("LOG: Se encontraron " + tasks.size() + " tareas en la papelera para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        return tasks;
+    }
+
+    // Obtiene tareas de un usuario aplicando filtros y ordenación dinámica.
     @Transactional(readOnly = true)
     public List<Task> obtenerTareasFiltradasYOrdenadasPorUsuario(User usuario, String busqueda, String filtroEstado,
                                                                   String filtroPrioridad, String filtroEtiqueta,
@@ -125,6 +182,7 @@ public class TaskService {
 
         List<Task> tareasDelUsuario = taskRepository.findByUserAndActiveOnPage(usuario, "on");
 
+        // Define el comparador para ordenar las tareas.
         Comparator<Task> comparador;
         if ("id".equalsIgnoreCase(ordenarPor)) {
             comparador = Comparator.comparing(Task::getId);
@@ -149,9 +207,10 @@ public class TaskService {
         }
 
         if ("desc".equalsIgnoreCase(direccionOrden)) {
-            comparador = comparador.reversed();
+            comparador = comparador.reversed(); // Invierte el orden si es descendente.
         }
 
+        // Aplica filtros y ordenación usando Streams.
         List<Task> filteredAndSortedTasks = tareasDelUsuario.stream()
                 .filter(tarea -> {
                     boolean coincide = true;
@@ -170,26 +229,28 @@ public class TaskService {
                     }
                     return coincide;
                 })
-                .sorted(comparador)
+                .sorted(comparador) // Ordena la lista.
                 .collect(Collectors.toList());
         System.out.println("LOG: Se encontraron " + filteredAndSortedTasks.size() + " tareas después de filtrar y ordenar.");
         return filteredAndSortedTasks;
     }
 
+    // Obtiene tareas de un usuario con fecha de vencimiento próxima (hoy + 2 días), excluyendo las completadas.
     @Transactional(readOnly = true)
     public List<Task> obtenerTareasProximasPorUsuario(User usuario, LocalDate hoy, LocalDate dentroDeDosDias) {
         System.out.println("LOG: Obteniendo tareas próximas para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A") + " (Hoy: " + hoy + ", Próximos 2 días: " + dentroDeDosDias + ")");
         List<Task> upcomingTasks = taskRepository.findByUserAndActiveOnPage(usuario, "on").stream()
-                .filter(tarea -> !"Completada".equalsIgnoreCase(tarea.getStatus()))
+                .filter(tarea -> !"Completada".equalsIgnoreCase(tarea.getStatus())) // Excluye tareas completadas.
                 .filter(tarea -> tarea.getDueDate() != null &&
                         tarea.getDueDate().isAfter(hoy.minusDays(1)) &&
-                        tarea.getDueDate().isBefore(dentroDeDosDias.plusDays(1)))
-                .sorted(Comparator.comparing(Task::getDueDate))
+                        tarea.getDueDate().isBefore(dentroDeDosDias.plusDays(1))) // Filtra por fecha.
+                .sorted(Comparator.comparing(Task::getDueDate)) // Ordena por fecha de vencimiento.
                 .collect(Collectors.toList());
         System.out.println("LOG: Se encontraron " + upcomingTasks.size() + " tareas próximas para el usuario.");
         return upcomingTasks;
     }
 
+    // Busca y retorna todas las tareas en la base de datos (para uso administrativo).
     public List<Task> buscarTodasLasTareas() {
         System.out.println("LOG: Buscando todas las tareas (sin filtro de usuario).");
         List<Task> allTasks = taskRepository.findAll();
@@ -197,17 +258,15 @@ public class TaskService {
         return allTasks;
     }
 
+    // Busca una tarea por su ID.
     public Optional<Task> buscarTareaPorId(Long id) {
         System.out.println("LOG: Buscando tarea por ID: " + id);
         Optional<Task> task = taskRepository.findById(id);
-        if (task.isPresent()) {
-            System.out.println("LOG: Tarea ID " + id + " encontrada.");
-        } else {
-            System.out.println("LOG: Tarea ID " + id + " no encontrada.");
-        }
+        System.out.println("LOG: Tarea ID " + id + (task.isPresent() ? " encontrada." : " no encontrada."));
         return task;
     }
 
+    // Guarda una tarea en la base de datos (puede ser para creación o actualización general).
     public Task guardarTarea(Task tarea) {
         System.out.println("LOG: Guardando tarea (método genérico): '" + tarea.getTitle() + "'");
         Task savedTask = taskRepository.save(tarea);
@@ -215,12 +274,14 @@ public class TaskService {
         return savedTask;
     }
 
+    // Elimina una tarea de forma permanente por su ID.
     public void eliminarTarea(Long id) {
         System.out.println("LOG: Eliminando tarea físicamente por ID: " + id);
         taskRepository.deleteById(id);
         System.out.println("LOG: Tarea ID " + id + " eliminada físicamente.");
     }
 
+    // Busca tareas activas por el ID de un usuario (para uso administrativo).
     @Transactional(readOnly = true)
     public List<Task> buscarTareasPorIdUsuario(Long idUsuario) {
         System.out.println("LOG: Buscando tareas activas por ID de usuario para admin: " + idUsuario);
@@ -229,18 +290,16 @@ public class TaskService {
         return tasks;
     }
 
+    // Busca una tarea específica por ID de usuario y ID de tarea (para uso administrativo).
     @Transactional(readOnly = true)
     public Optional<Task> buscarTareaPorIdUsuarioYIdTarea(Long idUsuario, Long idTarea) {
         System.out.println("LOG: Buscando tarea ID: " + idTarea + " para el usuario ID: " + idUsuario + " (desde admin).");
         Optional<Task> task = taskRepository.findByIdAndUser_Id(idTarea, idUsuario);
-        if (task.isPresent()) {
-            System.out.println("LOG: Tarea ID " + idTarea + " encontrada para usuario ID: " + idUsuario + ".");
-        } else {
-            System.out.println("LOG: Tarea ID " + idTarea + " no encontrada para usuario ID: " + idUsuario + ".");
-        }
+        System.out.println("LOG: Tarea ID " + idTarea + (task.isPresent() ? " encontrada." : " no encontrada.") + " para usuario ID: " + idUsuario + ".");
         return task;
     }
 
+    // Actualiza una tarea específica de un usuario (desde el panel de administración).
     @Transactional
     public Task actualizarTarea(Long idUsuario, Long idTarea, @Valid Task tareaActualizada) {
         System.out.println("LOG: Intentando actualizar tarea ID: " + idTarea + " para usuario ID: " + idUsuario + " (desde admin).");
@@ -248,9 +307,9 @@ public class TaskService {
 
         if (tareaEncontrada.isPresent()) {
             Task tarea = tareaEncontrada.get();
-            String estadoAnterior = tarea.getStatus();
-            System.out.println("LOG: Tarea ID " + idTarea + " encontrada para admin. Estado anterior: " + estadoAnterior);
+            System.out.println("LOG: Tarea ID " + idTarea + " encontrada para admin.");
 
+            // Actualiza los campos de la tarea.
             tarea.setTitle(tareaActualizada.getTitle());
             tarea.setDescription(tareaActualizada.getDescription());
             tarea.setDueDate(tareaActualizada.getDueDate());
@@ -258,14 +317,6 @@ public class TaskService {
             tarea.setStatus(tareaActualizada.getStatus());
             tarea.setEtiqueta(tareaActualizada.getEtiqueta());
             System.out.println("LOG: Datos de tarea ID " + idTarea + " actualizados en memoria (desde admin).");
-
-            if ("Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && !"Completada".equalsIgnoreCase(tarea.getStatus())) {
-                tarea.setCompletionDate(LocalDate.now());
-                System.out.println("LOG: Tarea ID " + idTarea + " marcada como completada (desde admin). Fecha de completado establecida.");
-            } else if (!"Completada".equalsIgnoreCase(tareaActualizada.getStatus()) && "Completada".equalsIgnoreCase(tarea.getStatus())) {
-                tarea.setCompletionDate(null);
-                System.out.println("LOG: Tarea ID " + idTarea + " desmarcada como completada (desde admin). Fecha de completado eliminada.");
-            }
 
             Task updatedTask = taskRepository.save(tarea);
             System.out.println("LOG: Tarea ID " + idTarea + " guardada en la base de datos (desde admin).");
@@ -276,8 +327,9 @@ public class TaskService {
         }
     }
 
+    // Elimina físicamente una tarea de un usuario (desde el panel de administración).
     @Transactional
-    public boolean eliminarTarea(Long idUsuario, Long idTarea) {
+    public boolean eliminarTareaDesdeAdmin(Long idUsuario, Long idTarea) {
         System.out.println("LOG: Intentando eliminar tarea físicamente ID: " + idTarea + " del usuario ID: " + idUsuario + " (desde admin).");
         Optional<Task> tareaAEliminar = taskRepository.findByIdAndUser_Id(idTarea, idUsuario);
         if (tareaAEliminar.isPresent()) {
@@ -287,5 +339,23 @@ public class TaskService {
         }
         System.err.println("LOG ERROR: Tarea ID " + idTarea + " no encontrada o no pertenece al usuario ID: " + idUsuario + " para eliminación (desde admin).");
         return false;
+    }
+
+    // Tarea programada para eliminar permanentemente tareas de la papelera con más de 20 días.
+    @Scheduled(cron = "0 0 1 * * ?")
+    @Transactional
+    public void eliminarTareasAntiguasDePapelera() {
+        System.out.println("LOG: Ejecutando tarea programada para eliminar tareas antiguas de la papelera.");
+        LocalDate veinteDiasAtras = LocalDate.now().minusDays(20); // Define la fecha límite de 20 días atrás.
+        List<Task> tareasParaEliminar = taskRepository.findByActiveOnPageAndDeletedAtBefore("off", veinteDiasAtras); // Busca tareas en papelera antes de la fecha límite.
+
+        if (tareasParaEliminar.isEmpty()) {
+            System.out.println("LOG: No se encontraron tareas para eliminar automáticamente de la papelera.");
+            return;
+        }
+
+        System.out.println("LOG: Se encontraron " + tareasParaEliminar.size() + " tareas para eliminar automáticamente.");
+        taskRepository.deleteAll(tareasParaEliminar); // Elimina todas las tareas encontradas.
+        System.out.println("LOG: Tareas antiguas eliminadas de la papelera exitosamente.");
     }
 }
