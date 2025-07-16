@@ -6,6 +6,9 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication; // Importar Authentication
+import org.springframework.security.core.context.SecurityContextHolder; // Importar SecurityContextHolder
+import org.springframework.security.core.userdetails.UsernameNotFoundException; // Importar UsernameNotFoundException
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,6 +44,17 @@ public class AdminController {
     @GetMapping
     public String mostrarPanelAdmin(Model model) {
         System.out.println("LOG: Accediendo al panel de administración.");
+        // Obtener la autenticación actual
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        // Buscar el usuario completo por su nombre de usuario
+        User currentUser = userService.buscarEntidadPorUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+
+        // Añadir el objeto 'user' al modelo para que Thymeleaf pueda acceder a él
+        model.addAttribute("user", currentUser);
+
         return "admin";
     }
 
@@ -118,7 +132,7 @@ public class AdminController {
         System.out.println("LOG: Solicitud para obtener tarea con ID " + idTarea + " del usuario con ID: " + idUsuario);
         Optional<Task> tarea = taskService.buscarTareaPorIdUsuarioYIdTarea(idUsuario, idTarea);
         return tarea.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+                            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Actualiza los detalles de una tarea específica de un usuario.
@@ -140,6 +154,4 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }
-
