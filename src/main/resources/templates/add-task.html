@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Tarea - Sistema de Gestión de Tareas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/add-task-style.css}">
+
+</head>
+
+<body class="with-fixed-navbar theme-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" th:href="@{/}">
+            <img id="logoA" th:src="@{/images/logo.png}" alt="Logo" height="50" class="d-inline-block align-top mr-2">
+            <img th:src="@{/images/logoTitulo.png}" alt="Nombre App" height="40" class="d-inline-block align-top">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}"
+                        th:classappend="${currentUri == '/' || currentUri == '' ? 'active' : ''}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tasks}"
+                        th:classappend="${#strings.startsWith(currentUri, '/tasks') && !#strings.endsWith(currentUri, '/tasks/add') ? 'active' : ''}">
+                        <i class="fas fa-list-alt"></i> Mis Tareas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tasks/add}"
+                        th:classappend="${#strings.endsWith(currentUri, '/tasks/add') ? 'active' : ''}">
+                        <i class="fas fa-plus-square"></i> Nueva Tarea
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/calendar}"
+                        th:classappend="${#strings.startsWith(currentUri, '/calendar') ? 'active' : ''}">
+                        <i class="fas fa-calendar-alt"></i> Calendario
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/trash}"
+                        th:classappend="${#strings.startsWith(currentUri, '/trash') ? 'active' : ''}">
+                        <i class="fas fa-trash-alt"></i> Papelera
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center mr-3">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="theme-toggle">
+                        <label class="custom-control-label text-light" for="theme-toggle">
+                            <i class="fas fa-sun"></i> / <i class="fas fa-moon"></i>
+                        </label>
+                    </div>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/login}"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
+                </li>
+
+                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdownMenuLink" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img id="profile-image"
+                            th:src="${user.imageUrl != null and user.imageUrl.length() > 0 ? user.imageUrl : '/images/perfilVacio.jpg'}"
+                            alt="Foto de perfil" class="rounded-circle profile-img mr-1" />
+                        <span th:text="${#authentication.principal.username}">Usuario</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdownMenuLink">
+                        <h6 class="dropdown-header" th:text="${#authentication.principal.username}">Nombre de Usuario
+                        </h6>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" th:href="@{/profile}">
+                            <i class="fas fa-user-circle"></i> Información de Usuario
+                        </a>
+                        <a class="dropdown-item" th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">
+                            <i class="fas fa-cog"></i> Modo Admin
+                        </a>
+                        <div class="dropdown-divider"></div>
+
+                        <a class="dropdown-item" href="#"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                        <form th:action="@{/logout}" method="post" id="logout-form" style="display: none;">
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <div class="container main-content">
+        <div class="task-form-container">
+            <h2><i class="fas fa-plus-square"></i> Agregar Nueva Tarea</h2>
+
+            <form id="taskForm" th:object="${taskFormObject}" th:action="@{/tasks/save}" method="post">
+
+                <input type="hidden" th:field="*{id}">
+
+
+                <div class="form-group">
+                    <label for="taskTitle"><i class="fas fa-heading"></i> Título de la Tarea</label>
+                    <input type="text" class="form-control" id="taskTitle" th:field="*{title}"
+                        placeholder="Ej: Realizar informe mensual" required
+                        th:classappend="${#fields.hasErrors('title') ? 'is-invalid' : ''}">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Error en
+                        título</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDescription"><i class="fas fa-align-left"></i> Descripción</label>
+                    <textarea class="form-control" id="taskDescription" th:field="*{description}" rows="3"
+                        placeholder="Ej: Detallar avances"
+                        th:classappend="${#fields.hasErrors('description') ? 'is-invalid' : ''}"></textarea>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}"
+                        th:errors="*{description}">Error en descripción</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="taskDueDate"><i class="fas fa-calendar-alt"></i> Fecha de Vencimiento</label>
+                        <input type="date" class="form-control" id="taskDueDate" th:field="*{dueDate}" required
+                            th:classappend="${#fields.hasErrors('dueDate') ? 'is-invalid' : ''}">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}">
+                            Error en fecha</div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="taskPriority"><i class="fas fa-exclamation-circle"></i> Prioridad</label>
+                        <select id="taskPriority" class="form-control" th:field="*{priority}" required
+                            th:classappend="${#fields.hasErrors('priority') ? 'is-invalid' : ''}">
+                            <option value="" disabled th:selected="${taskFormObject.priority == null}">Elegir...
+                            </option>
+                            <option value="Alta">Alta</option>
+                            <option value="Media">Media</option>
+                            <option value="Baja">Baja</option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}">
+                            Error en prioridad</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskStatus"><i class="fas fa-spinner"></i> Estado</label>
+                    <select id="taskStatus" class="form-control" th:field="*{status}" required
+                        th:classappend="${#fields.hasErrors('status') ? 'is-invalid' : ''}">
+                        <option value="" disabled th:selected="${taskFormObject.status == null}">Elegir...</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Proceso">En Proceso</option>
+                    </select>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Error en
+                        estado</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="etiqueta"><i class="fas fa-tag"></i> Etiqueta (Opcional)</label>
+                    <input type="text" class="form-control" id="etiqueta" th:field="*{etiqueta}"
+                        placeholder="Ej: Trabajo, Personal, Urgente"
+                        th:classappend="${#fields.hasErrors('etiqueta') ? 'is-invalid' : ''}">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('etiqueta')}" th:errors="*{etiqueta}">Error
+                        en etiqueta</div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a th:href="@{/tasks}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Tarea
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer id="footerA" class="footer text-white text-center py-3">
+        <div class="container">
+            <span>&copy; <span th:text="${#dates.year(#dates.createNow())}"></span> Sistema de Gestión de Tareas. Todos
+                los derechos reservados.</span>
+        </div>
+    </footer>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script th:src="@{/js/add-task-script.js}"></script>
+    <script th:src="@{/js/themes-script.js}"></script>
+
+</body>
+
+</html>

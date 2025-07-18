@@ -1,0 +1,174 @@
+body.theme-light {
+    --body-bg: #ffffff;
+    --main-content-bg: #ffffff;
+    --text-color: #212529;
+    --heading-color: #ffffff;
+    --navbar-bg: #343a40;
+    --navbar-text: rgba(255, 255, 255, 0.75);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #fff;
+    --card-text: #212529;
+    --border-color: #000000;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --h2: #000;
+    --rotating-tip-bg: #406a42;
+    --rotating-tip-text: #ffffff;
+    --tasks-due-soon-item-bg: #f8f9fa;
+    --tasks-due-soon-item-text: #333;
+    --tasks-due-soon-duedate-text: #555;
+}
+
+body.theme-dark {
+    --h2: #fff;
+    --body-bg: #343a40;
+    --main-content-bg: #343a40;
+    --text-color: #000000;
+    --heading-color: #ffffff;
+    --navbar-bg: #212529;
+    --navbar-text: rgba(255, 255, 255, 0.85);
+    --navbar-link-hover: rgba(255, 255, 255, 1);
+    --card-bg: #b1da9d;
+    --card-text: #000000;
+    --border-color: #5a6268;
+    --footer-bg: #212529;
+    --footer-text: #ced4da;
+    --rotating-tip-bg: #218838;
+    --rotating-tip-text: #ffffff;
+    --tasks-due-soon-item-bg: #ced4da;
+    --tasks-due-soon-item-text: #212529;
+    --tasks-due-soon-duedate-text: #555;
+}
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+h1, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
+h2 {
+    color: var(--h2);
+}
+
+.main-content {
+    flex: 1; /* CLAVE: Permite que el contenido principal ocupe todo el espacio disponible, empujando el footer */
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: var(--main-content-bg);
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text);
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: .0rem 1rem;
+}
+
+.navbar-brand {
+    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-brand img {
+    height: 55px;
+}
+
+#logoA {
+    height: 80px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: var(--navbar-text);
+}
+
+.nav-link:hover {
+    color: var(--navbar-link-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .nav-link.active:hover {
+    color: var(--navbar-link-hover);
+}
+
+#profile-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50% !important;
+}
+
+.perfil-img {
+    max-width: 200px;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    border-radius: 5%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 15px auto;
+}
+
+/* Estilos específicos para los elementos presentes en profile.html */
+.card {
+    background-color: var(--card-bg);
+    color: var(--card-text);
+    border-color: var(--border-color); /* Para el borde de la tarjeta */
+}
+
+.card-header {
+    /* bg-primary y text-white ya están en el HTML, no necesitan CSS aquí a menos que quieras anular Bootstrap */
+    border-bottom-color: var(--border-color); /* Para el borde inferior del header de la tarjeta */
+}
+
+.form-label {
+    /* Si quieres que el color del label cambie con el tema, puedes usar --text-color */
+    color: var(--text-color);
+}
+
+.form-control {
+    background-color: var(--main-content-bg); /* O un color específico para inputs */
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* Estilos del Footer, adaptados de tu index-style.css */
+.footer {
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto; /* CLAVE: Empuja el footer hacia abajo */
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    background-color: var(--footer-bg); /* Usa la variable de tema */
+    color: var(--footer-text); /* Usa la variable de tema */
+}
+
+/* Este estilo se mantuvo de tu index-style.css original, si quieres que el footer siempre sea negro */
+#footerA {
+    background-color: black; /* Esto sobrescribe --footer-bg si está presente */
+}
+
+/* Para los rows dentro del main-content */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    margin-top: 20px;
+}

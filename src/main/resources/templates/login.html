@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Gestión de Tareas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/login-style.css}">
+</head>
+<body class="login-page">
+    <div class="logo-container">
+        <img id="logo" th:src="@{/images/logo.png}" alt="Logo de la Aplicación">
+        <img id="logo-titulo" th:src="@{/images/logoTitulo.png}" alt="Nombre de la Aplicación">
+    </div>
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fas fa-user-circle"></i>
+            <h2>Iniciar Sesión</h2>
+        </div>
+        <div th:if="${param.error}" class="alert alert-danger" role="alert" id="serverErrorAlert">
+            <i class="fas fa-exclamation-triangle"></i> Nombre de usuario o contraseña incorrectos.
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle"></i> Has cerrado sesión exitosamente.
+        </div>
+        <div id="jsErrorAlert" class="alert alert-danger" role="alert" style="display:none;">
+            <i class="fas fa-exclamation-triangle"></i> <span id="jsErrorMessage"></span>
+        </div>
+        <div id="jsSuccessAlert" class="alert alert-success" role="alert" style="display:none;">
+            <i class="fas fa-check-circle"></i> <span id="jsSuccessMessage"></span>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username"><i class="fas fa-user"></i> Nombre de Usuario</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Ingrese su usuario"
+                    required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password"
+                    placeholder="Ingrese su contraseña" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+        </form>
+        <div class="text-center mt-3">
+            <p>¿No tienes una cuenta?</p>
+            <a class="btn btn-secondary" th:href="@{/register}">
+                <i class="fas fa-user-plus"></i> Registrarse
+            </a>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function showAlert(type, message) {
+            const errorAlert = $('#jsErrorAlert');
+            const successAlert = $('#jsSuccessAlert');
+            const errorMessageSpan = $('#jsErrorMessage');
+            const successMessageSpan = $('#jsSuccessMessage');
+
+            $('#serverErrorAlert').hide();
+
+            if (type === 'error') {
+                errorMessageSpan.text(message);
+                errorAlert.show();
+                successAlert.hide();
+            } else if (type === 'success') {
+                successMessageSpan.text(message);
+                successAlert.show();
+                errorAlert.hide();
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = $('#username').val();
+            const password = $('#password').val();
+
+            try {
+                const response = await fetch('/api/authenticate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.jwt) {
+                        localStorage.setItem('jwtToken', data.jwt);
+                        showAlert('success', '¡Inicio de sesión exitoso! Redirigiendo...');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        showAlert('error', 'Error desconocido en la autenticación. No se recibió el token JWT.');
+                    }
+                } else {
+                    const errorMessage = data.message || 'Credenciales incorrectas';
+                    showAlert('error', errorMessage);
+                }
+            } catch (error) {
+                console.error('Error de red o del servidor:', error);
+                showAlert('error', 'Error al intentar iniciar sesión. Inténtalo de nuevo más tarde.');
+            }
+        }
+
+        $(document).ready(function() {
+            if ($('#serverErrorAlert').length && $('#serverErrorAlert').is(':visible')) {
+                $('#jsErrorAlert').hide();
+                $('#jsSuccessAlert').hide();
+            } else {
+                $('#jsErrorAlert').hide();
+                $('#jsSuccessAlert').hide();
+            }
+        });
+    </script>
+</body>
+</html>

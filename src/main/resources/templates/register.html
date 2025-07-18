@@ -1,0 +1,72 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Sistema de Gestión de Tareas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/login-style.css}">
+</head>
+
+<body class="login-page">
+    <div class="logo-container">
+        <img id="logo" th:src="@{/images/logo.png}" alt="Logo de la Aplicación">
+        <img id="logo-titulo" th:src="@{/images/logoTitulo.png}" alt="Nombre de la Aplicación">
+    </div>
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fas fa-user-plus"></i>
+            <h2>Registro de Usuario</h2>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+        </div>
+        <div th:if="${param.success}" class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle"></i> Registro exitoso. Ahora puede iniciar sesión.
+        </div>
+
+        <form id="registroForm" th:action="@{/register}" method="post" th:object="${usuario}">
+            <div class="form-group">
+                <label for="username"><i class="fas fa-user"></i> Nombre de Usuario</label>
+                <input type="text" class="form-control" id="username" th:field="*{username}"
+                    placeholder="Ingrese su nombre de usuario"
+                    th:classappend="${#fields.hasErrors('username') ? 'is-invalid' : ''}">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">
+                    Error de nombre de usuario
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="Ingrese su correo"
+                    th:classappend="${#fields.hasErrors('email') ? 'is-invalid' : ''}">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                    Error de correo electrónico
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                <input type="password" class="form-control" id="password" th:field="*{password}"
+                    placeholder="Cree una contraseña"
+                    th:classappend="${#fields.hasErrors('password') ? 'is-invalid' : ''}">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                    Error de contraseña
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success btn-block"><i class="fas fa-user-plus"></i>
+                Registrarse</button>
+        </form>
+        <div class="text-center mt-3">
+            <a th:href="@{/login}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a Login
+            </a>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
