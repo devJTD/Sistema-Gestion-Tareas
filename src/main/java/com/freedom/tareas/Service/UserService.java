@@ -107,12 +107,7 @@ public class UserService implements UserDetailsService {
                 });
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-<<<<<<< HEAD
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name())); // Asigna el rol al
-                                                                                         // UserDetails.
-=======
         authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name())); // Asigna el rol al UserDetails.
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         System.out.println("LOG: UserDetails cargados para '" + username + "' con rol: " + usuario.getRole().name());
 
         UserBuilder builder = org.springframework.security.core.userdetails.User.withUsername(usuario.getUsername());
@@ -168,12 +163,7 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-<<<<<<< HEAD
-    // Actualiza el perfil de un usuario, incluyendo validaciones y cambio de
-    // contraseña.
-=======
     // Actualiza el perfil de un usuario, incluyendo validaciones y cambio de contraseña.
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
     @Transactional
     public User updateProfile(User userDetails, String newPassword) {
         System.out.println("LOG: Intentando actualizar perfil del usuario con ID: " + userDetails.getId());
@@ -197,13 +187,8 @@ public class UserService implements UserDetailsService {
         }
 
         // Actualiza los campos permitidos del perfil.
-<<<<<<< HEAD
         existingUser.setUsername(userDetails.getUsername());
         existingUser.setEmail(userDetails.getEmail());
-=======
-        existingUser.setUsername(userDetails.getUsername()); 
-        existingUser.setEmail(userDetails.getEmail()); 
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         existingUser.setImageUrl(userDetails.getImageUrl());
         existingUser.setAge(userDetails.getAge());
         existingUser.setBirthDate(userDetails.getBirthDate());
@@ -219,7 +204,6 @@ public class UserService implements UserDetailsService {
         System.out.println("LOG: Perfil de usuario ID " + updatedUser.getId() + " guardado en la base de datos.");
         return updatedUser;
     }
-    // ---------------------------------------------------------------------
 
     // Busca un usuario por su ID.
     public Optional<User> buscarUsuarioPorId(Long id) {
@@ -233,12 +217,7 @@ public class UserService implements UserDetailsService {
     public Optional<User> buscarEntidadPorUsername(String username) {
         System.out.println("LOG: Buscando entidad de usuario por username: " + username);
         Optional<User> user = userRepository.findByUsername(username);
-<<<<<<< HEAD
-        System.out.println(
-                "LOG: Entidad de usuario '" + username + "'" + (user.isPresent() ? " encontrada." : " no encontrada."));
-=======
         System.out.println("LOG: Entidad de usuario '" + username + "'" + (user.isPresent() ? " encontrada." : " no encontrada."));
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         return user;
     }
 
@@ -246,12 +225,7 @@ public class UserService implements UserDetailsService {
     public Optional<User> buscarPorEmail(String email) {
         System.out.println("LOG: Buscando usuario por email: " + email);
         Optional<User> user = userRepository.findByEmail(email);
-<<<<<<< HEAD
-        System.out.println(
-                "LOG: Usuario con email '" + email + "'" + (user.isPresent() ? " encontrado." : " no encontrado."));
-=======
         System.out.println("LOG: Usuario con email '" + email + "'" + (user.isPresent() ? " encontrado." : " no encontrado."));
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         return user;
     }
 

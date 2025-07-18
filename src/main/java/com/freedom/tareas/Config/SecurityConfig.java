@@ -11,10 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-<<<<<<< HEAD
-import org.springframework.http.HttpMethod;
-=======
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,10 +18,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-<<<<<<< HEAD
-import org.springframework.security.core.userdetails.UserDetailsService;
-=======
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -46,24 +38,12 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 public class SecurityConfig {
 
     // Sección de Dependencias
-<<<<<<< HEAD
-    // Inyecta los servicios y filtros necesarios para la configuración de
-    // seguridad.
-=======
     // Inyecta los servicios y filtros necesarios para la configuración de seguridad.
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(UserService userService,
-<<<<<<< HEAD
-            PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil) {
-=======
-                          PasswordEncoder passwordEncoder,
-                          JwtUtil jwtUtil) {
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
+    public SecurityConfig(UserService userService, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -106,10 +86,6 @@ public class SecurityConfig {
     }
 
     // Sección de Cadena de Filtros para APIs (JWT)
-<<<<<<< HEAD
-    // Sección de Cadena de Filtros para APIs (JWT)
-=======
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -131,15 +107,9 @@ public class SecurityConfig {
                 })
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().authenticated())
-<<<<<<< HEAD
                 .addFilterBefore(jwtRequestFilterBean(userService, jwtUtil),
                         UsernamePasswordAuthenticationFilter.class);
-        System.out.println(
-                "DEBUG JWT: JwtRequestFilter añadido antes de UsernamePasswordAuthenticationFilter para APIs.");
-=======
-                .addFilterBefore(jwtRequestFilterBean(userService, jwtUtil), UsernamePasswordAuthenticationFilter.class);
         System.out.println("DEBUG JWT: JwtRequestFilter añadido antes de UsernamePasswordAuthenticationFilter para APIs.");
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         System.out.println("************************************************************************************\n");
         return http.build();
     }
@@ -157,17 +127,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login/**", "/register/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/authenticate").permitAll()
-<<<<<<< HEAD
-                        .requestMatchers("/debug-alerts").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin", "/admin/**", "/admin/api/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/tasks/edit/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**", "/trash/**",
-                                "/archived/**")
-                        .hasAnyRole("USER", "ADMIN")
-=======
                         .requestMatchers("/admin", "/admin/**", "/admin/api/**").hasRole("ADMIN")
                         .requestMatchers("/", "/profile", "/tasks/**", "/calendar/**", "/profile/**", "/trash/**", "/archived/**").hasAnyRole("USER", "ADMIN")
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
                         .anyRequest().denyAll())
                 .formLogin(form -> {
                     form.loginPage("/login")
@@ -195,28 +156,17 @@ public class SecurityConfig {
 
     // Sección de Proveedor de Autenticación
     @Bean
-<<<<<<< HEAD
-    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-=======
     public DaoAuthenticationProvider authenticationProvider() {
         System.out.println("LOG: Creando bean DaoAuthenticationProvider.");
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
         provider.setPasswordEncoder(this.passwordEncoder);
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         return provider;
     }
 
     // Sección de AuthenticationManager
     @Bean
-<<<<<<< HEAD
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
             throws Exception {
-=======
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
         System.out.println("LOG: Exponiendo bean AuthenticationManager.");
         return authenticationConfiguration.getAuthenticationManager();
     }
@@ -229,11 +179,7 @@ public class SecurityConfig {
         return new AccessDeniedHandler() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response,
-<<<<<<< HEAD
                     AccessDeniedException accessDeniedException) throws IOException, ServletException {
-=======
-                               AccessDeniedException accessDeniedException) throws IOException, ServletException {
->>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
                 System.out.println("LOG: Acceso denegado para la ruta: " + request.getRequestURI());
                 response.sendRedirect("/");
             }
