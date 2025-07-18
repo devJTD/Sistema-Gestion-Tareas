@@ -26,7 +26,7 @@ public class AlertService {
         Long userId = getUserIdFromUsername(username);
         LocalDate today = LocalDate.now();
         List<Task> tasks = taskRepository.findAllAlerts(userId, today.plusDays(1));
-        log.info(">>> AlertService para {}: {} tareas encontradas", username, tasks.size());
+        log.info(">>> LOG para AlertService para {}: {} tareas encontradas", username, tasks.size());
         tasks.forEach(t -> log.info("   - {} vence {}", t.getTitle(), t.getDueDate()));
 
         List<AlertNavDTO> list = new ArrayList<>();
