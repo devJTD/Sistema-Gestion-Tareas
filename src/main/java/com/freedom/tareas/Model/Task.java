@@ -71,6 +71,9 @@ public class Task {
     @Column(name = "deleted_at")
     private LocalDate deletedAt;
 
+    public static final String STATUS_COMPLETED = "COMPLETED";
+    public static final String STATUS_ACTIVE = "ACTIVE";
+
     public Task(User user, String title, String description, LocalDate dueDate, String priority, String status,
             String activeOnPage) {
         this.user = user;

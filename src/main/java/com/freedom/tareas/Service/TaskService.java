@@ -127,29 +127,36 @@ public class TaskService {
         return updatedTask;
     }
 
-    // Mueve una tarea a la "papelera" estableciendo 'activeOnPage' a "off" y 'deletedAt' a la fecha actual.
+    // Mueve una tarea a la "papelera" estableciendo 'activeOnPage' a "off" y
+    // 'deletedAt' a la fecha actual.
     @Transactional
     public void enviarTareaAPapelera(Long id, User usuario) {
-        System.out.println("LOG: Intentando enviar tarea con ID: " + id + " a la papelera para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        System.out.println("LOG: Intentando enviar tarea con ID: " + id + " a la papelera para el usuario: "
+                + (usuario != null ? usuario.getUsername() : "N/A"));
         Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
         if (tareaEncontrada.isEmpty()) {
-            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para enviar a papelera.");
+            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario "
+                    + (usuario != null ? usuario.getUsername() : "N/A") + " para enviar a papelera.");
             throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
         }
         Task tarea = tareaEncontrada.get();
         tarea.setActiveOnPage("off"); // Marca como inactiva.
         tarea.setDeletedAt(LocalDate.now()); // Registra la fecha de eliminación.
         taskRepository.save(tarea);
-        System.out.println("LOG: Tarea ID " + id + " enviada a la papelera para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        System.out.println("LOG: Tarea ID " + id + " enviada a la papelera para el usuario: "
+                + (usuario != null ? usuario.getUsername() : "N/A"));
     }
 
-    // Restaura una tarea de la papelera, volviendo 'activeOnPage' a "on" y 'deletedAt' a null.
+    // Restaura una tarea de la papelera, volviendo 'activeOnPage' a "on" y
+    // 'deletedAt' a null.
     @Transactional
     public Task restaurarTarea(Long id, User usuario) {
-        System.out.println("LOG: Intentando restaurar tarea con ID: " + id + " para el usuario: " + (usuario != null ? usuario.getUsername() : "N/A"));
+        System.out.println("LOG: Intentando restaurar tarea con ID: " + id + " para el usuario: "
+                + (usuario != null ? usuario.getUsername() : "N/A"));
         Optional<Task> tareaEncontrada = taskRepository.findByIdAndUser(id, usuario);
         if (tareaEncontrada.isEmpty()) {
-            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario " + (usuario != null ? usuario.getUsername() : "N/A") + " para restaurar.");
+            System.err.println("LOG ERROR: Tarea ID " + id + " no encontrada o no pertenece al usuario "
+                    + (usuario != null ? usuario.getUsername() : "N/A") + " para restaurar.");
             throw new IllegalArgumentException("Tarea no encontrada o no pertenece al usuario con ID: " + id);
         }
         Task tarea = tareaEncontrada.get();

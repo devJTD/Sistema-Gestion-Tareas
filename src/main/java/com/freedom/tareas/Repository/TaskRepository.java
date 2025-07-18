@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -44,6 +45,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
   // para la limpieza automática
   List<Task> findByActiveOnPage(String activeOnPage);
 
+  @Query("""
+          SELECT t FROM Task t
+          WHERE t.user.id = :userId
+            AND t.activeOnPage = 'on'
+            AND t.status <> 'Completada'
+            AND t.dueDate <= :tomorrow
+          ORDER BY t.dueDate ASC
+      """)
   List<Task> findAllAlerts(@Param("userId") Long userId,
       @Param("tomorrow") LocalDate tomorrow);
 }

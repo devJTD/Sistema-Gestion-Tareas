@@ -1,6 +1,7 @@
 package com.freedom.tareas.Model;
 
 import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
