@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+# Sistema-Gestion-Tareas
+=======
 <div align="center">
 
 # 📋 Sistema de Gestión de Tareas
@@ -182,3 +185,4 @@ Una vez ejecutada la aplicación, accede a:
 *Si encuentras algún problema durante la instalación, no dudes en crear un issue en el repositorio.*
 
 </div>
+>>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2

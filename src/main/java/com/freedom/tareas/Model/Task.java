@@ -23,10 +23,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+<<<<<<< HEAD
+@Table(name = "tasks")
+public class Task {
+
+    @Id
+=======
 @Table(name = "tasks") 
 public class Task {
 
     @Id 
+>>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -71,6 +78,12 @@ public class Task {
     @Column(name = "deleted_at")
     private LocalDate deletedAt;
 
+<<<<<<< HEAD
+    public static final String STATUS_COMPLETED = "COMPLETED";
+    public static final String STATUS_ACTIVE = "ACTIVE";
+
+=======
+>>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
     public Task(User user, String title, String description, LocalDate dueDate, String priority, String status,
             String activeOnPage) {
         this.user = user;

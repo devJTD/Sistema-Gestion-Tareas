@@ -1,3 +1,515 @@
+<<<<<<< HEAD
+<html
+  lang="es"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mis Tareas - Sistema de Gestión de Tareas</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/tasks-style.css}" />
+  </head>
+
+  <body class="with-fixed-navbar theme-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" th:href="@{/}">
+        <img
+          id="logoA"
+          th:src="@{/images/logo.png}"
+          alt="Logo"
+          height="50"
+          class="d-inline-block align-top mr-2"
+        />
+        <img
+          th:src="@{/images/logoTitulo.png}"
+          alt="Nombre App"
+          height="40"
+          class="d-inline-block align-top"
+        />
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              th:href="@{/}"
+              th:classappend="${currentUri == '/' || currentUri == '' ? 'active' : ''}"
+            >
+              <i class="fas fa-home"></i> Inicio
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              th:href="@{/tasks}"
+              th:classappend="${currentUri != null and #strings.startsWith(currentUri, '/tasks') and !#strings.endsWith(currentUri, '/tasks/add')} ? 'active' : ''"
+            >
+              <i class="fas fa-list-alt"></i> Mis Tareas
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              th:href="@{/tasks/add}"
+              th:classappend="${#strings.endsWith(currentUri, '/tasks/add') ? 'active' : ''}"
+            >
+              <i class="fas fa-plus-square"></i> Nueva Tarea
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              th:href="@{/calendar}"
+              th:classappend="${#strings.startsWith(currentUri, '/calendar') ? 'active' : ''}"
+            >
+              <i class="fas fa-calendar-alt"></i> Calendario
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              th:href="@{/trash}"
+              th:classappend="${#strings.startsWith(currentUri, '/trash') ? 'active' : ''}"
+            >
+              <i class="fas fa-trash-alt"></i> Papelera
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+          <!-- Campanita de alertas -->
+          <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="alertDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-bell"></i>
+              <span
+                class="badge badge-danger"
+                th:if="${!navAlerts.isEmpty()}"
+                th:text="${navAlerts.size()}"
+                >0</span
+              >
+            </a>
+            <div
+              class="dropdown-menu dropdown-menu-right"
+              aria-labelledby="alertDropdown"
+              style="min-width: 220px"
+            >
+              <h6 class="dropdown-header">Próximas a vencer</h6>
+
+              <!-- Tareas vencidas / por vencer -->
+              <a
+                class="dropdown-item d-flex justify-content-between"
+                th:each="a : ${navAlerts}"
+                th:href="@{/tasks/edit/{id}(id=${a.taskId()})}"
+              >
+                <span th:text="${a.title()}"></span>
+                <span
+                  th:classappend="${a.overdue()} ? 'text-danger' : 'text-warning'"
+                >
+                  <i
+                    th:classappend="${a.overdue()} ? 'fas fa-exclamation-circle' : 'fas fa-clock'"
+                  ></i>
+                  <span
+                    th:text="${#temporals.format(a.dueDate(), 'dd/MM')}"
+                  ></span>
+                </span>
+              </a>
+
+              <div
+                th:if="${navAlerts.isEmpty()}"
+                class="dropdown-item text-muted"
+              >
+                Sin alertas
+              </div>
+            </div>
+          </li>
+          <li class="nav-item d-flex align-items-center mr-3">
+            <div class="custom-control custom-switch">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="theme-toggle"
+              />
+              <label class="custom-control-label text-light" for="theme-toggle">
+                <i class="fas fa-sun"></i> / <i class="fas fa-moon"></i>
+              </label>
+            </div>
+          </li>
+          <li class="nav-item" sec:authorize="!isAuthenticated()">
+            <a class="nav-link" th:href="@{/login}"
+              ><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a
+            >
+          </li>
+          <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="userDropdownMenuLink"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <img
+                id="profile-image"
+                th:src="${user.imageUrl != null and user.imageUrl.length() > 0 ? user.imageUrl : '/images/perfilVacio.jpg'}"
+                alt="Foto de perfil"
+                class="rounded-circle profile-img mr-1"
+              />
+              <span th:text="${#authentication.principal.username}"
+                >Usuario</span
+              >
+            </a>
+            <div
+              class="dropdown-menu dropdown-menu-right"
+              aria-labelledby="userDropdownMenuLink"
+            >
+              <h6
+                class="dropdown-header"
+                th:text="${#authentication.principal.username}"
+              >
+                Nombre de Usuario
+              </h6>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" th:href="@{/profile}">
+                <i class="fas fa-user-circle"></i> Información de Usuario
+              </a>
+              <a
+                class="dropdown-item"
+                th:href="@{/admin}"
+                sec:authorize="hasRole('ADMIN')"
+              >
+                <i class="fas fa-cog"></i> Modo Admin
+              </a>
+              <div class="dropdown-divider"></div>
+              <a
+                class="dropdown-item"
+                href="#"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+              >
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+              </a>
+              <form
+                th:action="@{/logout}"
+                method="post"
+                id="logout-form"
+                style="display: none"
+              ></form>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container main-content">
+      <div class="row mb-3 align-items-center">
+        <div class="col-md-6">
+          <h2><i class="fas fa-list-alt"></i> Listado de Tareas</h2>
+        </div>
+        <div
+          class="col-md-6 text-md-right d-flex justify-content-md-end flex-wrap"
+        >
+          <a
+            th:href="@{/tasks/add}"
+            class="btn btn-primary mb-2 mb-md-0 mr-md-2"
+          >
+            <i class="fas fa-plus-circle"></i> Agregar Nueva Tarea
+          </a>
+          <a th:href="@{/trash}" class="btn btn-warning mb-2 mb-md-0 mr-md-2">
+            <i class="fas fa-trash-alt"></i> Ver Papelera
+          </a>
+          <a th:href="@{/archived}" class="btn btn-info mb-2 mb-md-0">
+            <i class="fas fa-archive"></i> Ver Archivados
+          </a>
+        </div>
+      </div>
+
+      <div
+        th:if="${successMessage}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${successMessage}"></span>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div
+        th:if="${errorMessage}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <span th:text="${errorMessage}"></span>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div
+        th:if="${task != null and #fields.hasErrors('task.*')}"
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        <strong>Error de validación:</strong> Por favor, corrige los errores en
+        el formulario.
+        <ul>
+          <li th:each="err : ${#fields.errors('task.*')}" th:text="${err}"></li>
+        </ul>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0 filtroTitulo">
+            <i class="fas fa-filter"></i> Filtros y Búsqueda
+          </h5>
+        </div>
+        <div class="card-body">
+          <form th:action="@{/tasks}" method="get" class="form-inline">
+            <div class="form-group mr-2 mb-2">
+              <label for="search" class="mr-1">Buscar:</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="search"
+                name="search"
+                th:value="${search}"
+                placeholder="Título o descripción"
+              />
+            </div>
+            <div class="form-group mr-2 mb-2">
+              <label for="statusFilter" class="mr-1">Estado:</label>
+              <select
+                id="statusFilter"
+                name="statusFilter"
+                class="form-control form-control-sm"
+              >
+                <option value="">Todos</option>
+                <option
+                  value="Pendiente"
+                  th:selected="${statusFilter == 'Pendiente'}"
+                >
+                  Pendiente
+                </option>
+                <option
+                  value="En Proceso"
+                  th:selected="${statusFilter == 'En Proceso'}"
+                >
+                  En Proceso
+                </option>
+                <option
+                  value="Completada"
+                  th:selected="${statusFilter == 'Completada'}"
+                >
+                  Completada
+                </option>
+              </select>
+            </div>
+            <div class="form-group mr-2 mb-2">
+              <label for="priorityFilter" class="mr-1">Prioridad:</label>
+              <select
+                id="priorityFilter"
+                name="priorityFilter"
+                class="form-control form-control-sm"
+              >
+                <option value="">Todas</option>
+                <option value="Baja" th:selected="${priorityFilter == 'Baja'}">
+                  Baja
+                </option>
+                <option
+                  value="Media"
+                  th:selected="${priorityFilter == 'Media'}"
+                >
+                  Media
+                </option>
+                <option value="Alta" th:selected="${priorityFilter == 'Alta'}">
+                  Alta
+                </option>
+              </select>
+            </div>
+            <div class="form-group mr-2 mb-2">
+              <label for="etiquetaFilter" class="mr-1">Etiqueta:</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="etiquetaFilter"
+                name="etiquetaFilter"
+                th:value="${etiquetaFilter}"
+                placeholder="Ej. Trabajo, Estudio"
+              />
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm mb-2">
+              <i class="fas fa-filter"></i> Filtrar
+            </button>
+            <a
+              id="BtnFiltros"
+              th:href="@{/tasks}"
+              class="btn btn-outline-secondary btn-sm mb-2 ml-2"
+            >
+              <i class="fas fa-sync-alt"></i> Limpiar Filtros
+            </a>
+          </form>
+        </div>
+      </div>
+
+      <div class="table-responsive" th:if="${!#lists.isEmpty(tasks)}">
+        <table class="table table-striped table-hover">
+          <thead class="thead-dark">
+            <tr id="trA">
+              <th>
+                <a
+                  th:href="@{/tasks(sortBy='id', sortDir=${sortBy == 'id' and sortDir == 'asc' ? 'desc' : 'asc'}, statusFilter=${statusFilter}, priorityFilter=${priorityFilter}, etiquetaFilter=${etiquetaFilter}, search=${search})}"
+                  ><i class="fas fa-hashtag"></i> ID
+                  <i
+                    th:if="${sortBy == 'id'}"
+                    th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"
+                  ></i
+                ></a>
+              </th>
+              <th>
+                <a
+                  th:href="@{/tasks(sortBy='title', sortDir=${sortBy == 'title' and sortDir == 'asc' ? 'desc' : 'asc'}, statusFilter=${statusFilter}, priorityFilter=${priorityFilter}, etiquetaFilter=${etiquetaFilter}, search=${search})}"
+                  ><i class="fas fa-heading"></i> Título
+                  <i
+                    th:if="${sortBy == 'title'}"
+                    th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"
+                  ></i
+                ></a>
+              </th>
+              <th><i class="fas fa-align-left"></i> Descripción</th>
+              <th>
+                <a
+                  th:href="@{/tasks(sortBy='dueDate', sortDir=${sortBy == 'dueDate' and sortDir == 'asc' ? 'desc' : 'asc'}, statusFilter=${statusFilter}, priorityFilter=${priorityFilter}, etiquetaFilter=${etiquetaFilter}, search=${search})}"
+                  ><i class="fas fa-calendar-alt"></i> Fecha Vencimiento
+                  <i
+                    th:if="${sortBy == 'dueDate'}"
+                    th:class="${sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"
+                  ></i
+                ></a>
+              </th>
+              <th>
+                <a
+                  th:href="@{/tasks(sortBy='priority', sortDir=${sortBy == 'priority' and sortDir == 'asc' ? 'desc' : 'asc'}, statusFilter=${statusFilter}, priorityFilter=${priorityFilter}, etiquetaFilter=${etiquetaFilter}, search=${search})}"
+                  ><i class="fas fa-exclamation-circle"></i> Prioridad
+                  <i
+                    th:if="${sortBy == 'priority'}"
+                    th:class="${sortDir == 'priority' and sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"
+                  ></i
+                ></a>
+              </th>
+              <th>
+                <a
+                  th:href="@{/tasks(sortBy='status', sortDir=${sortBy == 'status' and sortDir == 'asc' ? 'desc' : 'asc'}, statusFilter=${statusFilter}, priorityFilter=${priorityFilter}, etiquetaFilter=${etiquetaFilter}, search=${search})}"
+                  ><i class="fas fa-spinner"></i> Estado
+                  <i
+                    th:if="${sortBy == 'status'}"
+                    th:class="${sortDir == 'status' and sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"
+                  ></i
+                ></a>
+              </th>
+              <th>
+                <a
+                  th:href="@{/tasks(sortBy='etiqueta', sortDir=${sortBy == 'etiqueta' and sortDir == 'asc' ? 'desc' : 'asc'}, statusFilter=${statusFilter}, priorityFilter=${priorityFilter}, etiquetaFilter=${etiquetaFilter}, search=${search})}"
+                  ><i class="fas fa-tag"></i> Etiqueta
+                  <i
+                    th:if="${sortBy == 'etiqueta'}"
+                    th:class="${sortDir == 'etiqueta' and sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down'}"
+                  ></i
+                ></a>
+              </th>
+              <th><i class="fas fa-cogs"></i> Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              th:each="task : ${tasks}"
+              th:classappend="
+                                ${task.priority != null ? 'task-priority-' + #strings.toLowerCase(task.priority) : ''} +
+                                ${task.status != null ? ' task-status-' + #strings.toLowerCase(task.status) : ''}
+                            "
+            >
+              <td th:text="${task.id}">1</td>
+              <td th:text="${task.title}">Diseñar UI</td>
+              <td th:text="${task.description}">Crear mockups.</td>
+              <td
+                th:text="${task.dueDate != null ? #temporals.format(task.dueDate, 'dd-MM-yyyy') : 'N/A'}"
+              >
+                15-05-2025
+              </td>
+              <td>
+                <span
+                  th:switch="${task.priority}"
+                  class="badge"
+                  th:classappend="${#strings.equalsIgnoreCase(task.priority, 'Alta') ? 'badge-danger' : (#strings.equalsIgnoreCase(task.priority, 'Media') ? 'badge-warning' : 'badge-success')}"
+                  th:text="${task.priority}"
+                  >Alta</span
+                >
+              </td>
+              <td>
+                <span
+                  th:switch="${task.status}"
+                  class="badge"
+                  th:classappend="${#strings.equalsIgnoreCase(task.status, 'Completada') ? 'badge-success' : (#strings.equalsIgnoreCase(task.status, 'En Proceso') ? 'badge-info' : 'badge-secondary')}"
+                  th:text="${task.status}"
+                  >Pendiente</span
+                >
+              </td>
+              <td
+                th:text="${task.etiqueta != null && !task.etiqueta.isEmpty() ? task.etiqueta : '-'}"
+              >
+                -
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-info edit-task-btn"
+                  data-toggle="modal"
+                  data-target="#editTaskModal"
+                  th:attr="data-task-id=${task.id},
+=======
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
@@ -260,12 +772,304 @@
                         <td>
                             <button type="button" class="btn btn-sm btn-info edit-task-btn" data-toggle="modal"
                                 data-target="#editTaskModal" th:attr="data-task-id=${task.id},
+>>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
                                                                     data-task-title=${task.title},
                                                                     data-task-description=${task.description},
                                                                     data-task-duedate=${task.dueDate != null ? #temporals.format(task.dueDate, 'yyyy-MM-dd') : ''},
                                                                     data-task-priority=${task.priority},
                                                                     data-task-status=${task.status},
                                                                     data-task-etiqueta=${task.etiqueta}"
+<<<<<<< HEAD
+                  title="Editar"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-success complete-task-btn"
+                  th:data-task-id="${task.id}"
+                  th:data-task-title="${task.title}"
+                  th:if="${!#strings.equalsIgnoreCase(task.status, 'Completada')}"
+                  title="Marcar como Completada"
+                >
+                  <i class="fas fa-check-circle"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger delete-task-btn"
+                  data-toggle="modal"
+                  data-target="#deleteTaskModal"
+                  th:attr="data-task-id=${task.id}, data-task-title=${task.title}"
+                  title="Eliminar"
+                >
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        th:if="${#lists.isEmpty(tasks) and (statusFilter == null or statusFilter.isEmpty()) and (priorityFilter == null or priorityFilter.isEmpty()) and (etiquetaFilter == null or etiquetaFilter.isEmpty()) and (search == null or search.isEmpty())}"
+        class="alert alert-info mt-3"
+        role="alert"
+      >
+        <i class="fas fa-info-circle"></i> No hay tareas registradas. ¡Comienza
+        agregando una nueva!
+      </div>
+      <div
+        th:if="${#lists.isEmpty(tasks) and (statusFilter != null or priorityFilter != null or etiquetaFilter != null or search != null)}"
+        class="alert alert-info mt-3"
+        role="alert"
+      >
+        <i class="fas fa-info-circle"></i> No hay tareas que coincidan con los
+        criterios de búsqueda/filtro.
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="deleteTaskModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="deleteTaskModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteTaskModalLabel">
+              <i class="fas fa-exclamation-triangle text-danger"></i> Confirmar
+              Eliminación
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            ¿Estás seguro de que deseas eliminar la tarea: "<strong
+              id="taskTitleToDeleteModal"
+            ></strong
+            >"? Esta acción no se puede deshacer.
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <form
+              id="deleteTaskFormInModal"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash-alt"></i> Eliminar Tarea
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="editTaskModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="editTaskModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editTaskModalLabel">
+              <i class="fas fa-edit text-info"></i> Editar Tarea
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form
+              id="editTaskFormInModal"
+              method="post"
+              th:action="@{/tasks/update}"
+            >
+              <input type="hidden" id="editTaskId" name="id" />
+
+              <div class="form-group">
+                <label for="editTaskTitle">Título:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editTaskTitle"
+                  name="title"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="editTaskDescription">Descripción:</label>
+                <textarea
+                  class="form-control"
+                  id="editTaskDescription"
+                  name="description"
+                  rows="3"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="editTaskDueDate">Fecha Vencimiento:</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="editTaskDueDate"
+                  name="dueDate"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="editTaskPriority">Prioridad:</label>
+                <select
+                  class="form-control"
+                  id="editTaskPriority"
+                  name="priority"
+                  required
+                >
+                  <option value="Baja">Baja</option>
+                  <option value="Media">Media</option>
+                  <option value="Alta">Alta</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="editTaskStatus">Estado:</label>
+                <select
+                  class="form-control"
+                  id="editTaskStatus"
+                  name="status"
+                  required
+                >
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="En Proceso">En Proceso</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="editTaskEtiqueta"
+                  ><i class="fas fa-tag"></i> Etiqueta (Opcional):</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editTaskEtiqueta"
+                  name="etiqueta"
+                  placeholder="Ej: Trabajo, Personal"
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button
+              type="submit"
+              form="editTaskFormInModal"
+              class="btn btn-primary"
+            >
+              <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="taskCompletedModal"
+      tabindex="-1"
+      aria-labelledby="taskCompletedModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="taskCompletedModalLabel">
+              <i class="fas fa-check-circle text-success"></i> Confirmar Tarea
+              Completada
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            ¿Estás seguro de que quieres marcar "<span
+              id="completedTaskTitle"
+            ></span
+            >" como completada?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <form
+              id="confirmCompleteForm"
+              method="post"
+              style="display: inline"
+            >
+              <input type="hidden" name="_method" value="post" />
+              <button
+                type="submit"
+                class="btn btn-success"
+                id="confirmCompleteButton"
+              >
+                <i class="fas fa-check-circle"></i> Marcar como Completada
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer id="footerA" class="footer text-white text-center py-3">
+      <div class="container">
+        <span
+          >&copy;
+          <span th:text="${#dates.year(#dates.createNow())}"></span> Sistema de
+          Gestión de Tareas. Todos los derechos reservados.</span
+        >
+      </div>
+=======
                                 title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -436,6 +1240,7 @@
                 <span th:text="${#dates.year(#dates.createNow())}"></span> Sistema de
                 Gestión de Tareas. Todos los derechos reservados.</span>
         </div>
+>>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -443,6 +1248,26 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script th:src="@{/js/tasks-script.js}"></script>
     <script th:src="@{/js/themes-script.js}"></script>
+<<<<<<< HEAD
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const task = /*[[${task}]]*/ {};
+      if (task && task.id) {
+        $("#editTaskId").val(task.id);
+        $("#editTaskTitle").val(task.title);
+        $("#editTaskDescription").val(task.description);
+        $("#editTaskDueDate").val(task.dueDate);
+        $("#editTaskPriority").val(task.priority);
+        $("#editTaskStatus").val(task.status);
+        $("#editTaskEtiqueta").val(task.etiqueta || "");
+        $("#editTaskModal").modal("show");
+      }
+      /*]]>*/
+    </script>
+  </body>
+</html>
+=======
 </body>
 
 </html>
+>>>>>>> 7b7dbe4cb3319fb50a4423318bfa6a897eb9b6a2
